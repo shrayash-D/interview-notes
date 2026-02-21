@@ -17,6 +17,14 @@
 
 ---
 
+## ❓ Interview Questions
+
+| File                                                       | Description                                                                                                     |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| [📋 Top Interview Questions](./Top_Interview_Questions.md) | **130 most common questions** with direct links to answers + full syllabus coverage check + missing topics list |
+
+---
+
 ## 🏆 Top 20 Interview Questions
 
 | #   | Question                             | Module                                    |
@@ -89,6 +97,7 @@ When asked **"What is X?"**, always answer like this:
 ```
 interview-notes/
 ├── README.md                          ← You are here (index)
+├── Top_Interview_Questions.md         ← 130 questions + coverage check ⭐
 ├── Interview_Preparation_Notes.md     ← Full combined notes
 ├── Module1_DotNET8_CSharp12.md        ← .NET 8 & C# 12
 ├── Module2_SOLID_Principles.md        ← SOLID Principles
