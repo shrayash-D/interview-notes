@@ -8,9 +8,11 @@
 ## 🔷 1. DTO (Data Transfer Object)
 
 ### What is a DTO?
+
 > A **DTO** is a simple C# class used to **transfer data between layers** (e.g., from database to API response). It only contains the fields you want to expose — no business logic.
 
 **Why use DTOs?**
+
 - Avoids exposing your database model directly to the outside world
 - Hides sensitive fields (e.g., `PasswordHash`, `InternalId`)
 - Shapes data exactly how the consumer needs it
@@ -49,6 +51,7 @@ public EmployeeDto GetEmployee(int id)
 ## 🔷 2. AutoMapper
 
 ### What is AutoMapper?
+
 > **AutoMapper** is a library that **automatically maps** properties from one object to another (e.g., `Employee` → `EmployeeDto`), eliminating manual mapping code.
 
 ```bash
@@ -96,9 +99,11 @@ public class EmployeeController : Controller
 ## 🔷 3. Repository Pattern
 
 ### What is the Repository Pattern?
+
 > The **Repository Pattern** is a design pattern that **abstracts the data access layer**. Instead of writing EF Core/Dapper queries directly in controllers, you put them in a "repository" class behind an interface.
 
 **Why?**
+
 - Controllers stay clean (only business logic)
 - Easy to unit test (mock the repository)
 - Easy to swap data access technology (e.g., switch from EF Core to Dapper)
@@ -248,9 +253,11 @@ private readonly IRepository<Department> _deptRepo;
 ## 🔷 5. Unit of Work Pattern
 
 ### What is Unit of Work?
+
 > **Unit of Work** keeps track of multiple repository operations and **commits them all in one transaction**. Instead of each repository calling `SaveChanges()` independently, the Unit of Work does it once.
 
 **Why?**
+
 - Ensures atomicity across multiple repositories
 - Avoids partial saves (e.g., employee saved but department not)
 - Single `SaveChanges()` = better performance
@@ -313,7 +320,9 @@ public class OrderService
 ## 🔷 6. Middleware in ASP.NET Core (Deep Dive)
 
 ### What is Middleware?
+
 > **Middleware** components form a **pipeline** that processes HTTP requests and responses. Each component can:
+>
 > - Handle the request itself
 > - Pass it to the next component (`await next()`)
 > - Or do both (before AND after)
@@ -361,8 +370,9 @@ app.Run(async context =>
 ```
 
 ### Middleware Order (Critical!)
+
 ```
-Request ──────────────────────────────────────────────────► 
+Request ──────────────────────────────────────────────────►
    ↓ UseExceptionHandler
    ↓ UseHsts
    ↓ UseHttpsRedirection
@@ -372,7 +382,7 @@ Request ────────────────────────
    ↓ UseAuthorization
    ↓ UseSession
    ↓ MapControllers
-Response ◄────────────────────────────────────────────────── 
+Response ◄──────────────────────────────────────────────────
 ```
 
 **Interview Answer:** "Middleware is a pipeline of components that handle HTTP requests and responses in order. Each middleware can process the request, call the next one, and process the response on the way back. Order matters — for example, Authentication must always come before Authorization."
@@ -382,10 +392,11 @@ Response ◄──────────────────────�
 ## 🔷 7. Authentication & Authorization in ASP.NET Core
 
 ### Authentication vs Authorization
-| Concept | Question it answers | Example |
-|---|---|---|
-| **Authentication** | **Who are you?** | Login with username/password → JWT token issued |
-| **Authorization** | **What can you do?** | Only Admins can access `/admin` |
+
+| Concept            | Question it answers  | Example                                         |
+| ------------------ | -------------------- | ----------------------------------------------- |
+| **Authentication** | **Who are you?**     | Login with username/password → JWT token issued |
+| **Authorization**  | **What can you do?** | Only Admins can access `/admin`                 |
 
 ### JWT (JSON Web Token) Authentication
 
@@ -451,6 +462,7 @@ public IActionResult Login() { ... }
 ## 🔷 8. Service Layer Pattern
 
 ### What is a Service Layer?
+
 > A **Service Layer** sits between the Controller and the Repository. It contains **business logic** so the controller stays thin.
 
 ```
@@ -513,6 +525,7 @@ public async Task<IActionResult> Create(CreateEmployeeDto dto)
 ## 🔷 9. Circular Reference in EF Core / JSON Serialization
 
 ### The Problem
+
 > When you serialize an `Employee` that has a `Department`, and `Department` has a list of `Employees`, JSON serializer goes into an **infinite loop**.
 
 ```csharp
@@ -558,16 +571,18 @@ public class Department
 ## 🔷 10. Locking and Blocking in SQL Server
 
 ### Types of Locks
-| Lock | Description |
-|---|---|
-| **Shared (S)** | Read lock — multiple readers allowed at the same time |
-| **Exclusive (X)** | Write lock — only one writer, blocks all readers |
-| **Update (U)** | Intent to update — prevents deadlocks when upgrading from S to X |
-| **Row-Level Lock** | Locks a single row |
-| **Page-Level Lock** | Locks a page of data (8KB) |
-| **Table-Level Lock** | Locks the entire table |
+
+| Lock                 | Description                                                      |
+| -------------------- | ---------------------------------------------------------------- |
+| **Shared (S)**       | Read lock — multiple readers allowed at the same time            |
+| **Exclusive (X)**    | Write lock — only one writer, blocks all readers                 |
+| **Update (U)**       | Intent to update — prevents deadlocks when upgrading from S to X |
+| **Row-Level Lock**   | Locks a single row                                               |
+| **Page-Level Lock**  | Locks a page of data (8KB)                                       |
+| **Table-Level Lock** | Locks the entire table                                           |
 
 ### Blocking
+
 > **Blocking** happens when one transaction **holds a lock** and another transaction is **waiting** for it.
 
 ```sql
@@ -583,6 +598,7 @@ WHERE blocking_session_id > 0;
 ```
 
 ### Preventing Deadlocks
+
 1. **Always access tables in the same order** across transactions
 2. **Keep transactions short** — commit as soon as possible
 3. **Use proper indexes** — reduces lock contention
@@ -628,12 +644,15 @@ BEGIN TRANSACTION;
 ## 🔷 12. Updatable Views in SQL Server
 
 ### Rules for Updating a View
+
 A view is updatable if:
+
 - ✅ It's based on a **single table**
 - ✅ It contains the table's **Primary Key**
 - ✅ No `DISTINCT`, `GROUP BY`, `HAVING`, `UNION`, aggregate functions
 
 A view **cannot** be updated if:
+
 - ❌ Based on **multiple tables** (JOIN)
 - ❌ Contains calculated/derived columns
 - ❌ Uses `TOP` without `ORDER BY`
@@ -654,6 +673,7 @@ UPDATE vw_EmpDept SET DeptName = 'IT'; -- ❌ Error!
 ```
 
 ### INSTEAD OF Trigger on View
+
 > Use `INSTEAD OF UPDATE` trigger to enable updates on non-updatable views.
 
 ```sql
@@ -673,34 +693,34 @@ END;
 
 ## 📊 Patterns Quick Reference
 
-| Pattern | One-Liner | Key Benefit |
-|---|---|---|
-| **DTO** | Simple class to transfer data | Decouples DB model from API response |
-| **AutoMapper** | Auto-maps between objects | Removes boilerplate mapping code |
-| **Repository** | Abstracts data access behind interface | Testable, swappable data layer |
-| **Generic Repository** | One repository for all entities | DRY — no repeated code per entity |
-| **Unit of Work** | Groups repos, one SaveChanges | Atomic operations across multiple tables |
-| **Service Layer** | Business logic between Controller and Repo | Thin controllers, testable logic |
+| Pattern                | One-Liner                                  | Key Benefit                              |
+| ---------------------- | ------------------------------------------ | ---------------------------------------- |
+| **DTO**                | Simple class to transfer data              | Decouples DB model from API response     |
+| **AutoMapper**         | Auto-maps between objects                  | Removes boilerplate mapping code         |
+| **Repository**         | Abstracts data access behind interface     | Testable, swappable data layer           |
+| **Generic Repository** | One repository for all entities            | DRY — no repeated code per entity        |
+| **Unit of Work**       | Groups repos, one SaveChanges              | Atomic operations across multiple tables |
+| **Service Layer**      | Business logic between Controller and Repo | Thin controllers, testable logic         |
 
 ---
 
 ## 🎯 Interview Questions for This Module
 
-| # | Question |
-|---|---|
-| 1 | What is a DTO? Why do we use it instead of returning entities? |
-| 2 | What is AutoMapper? How do you configure a mapping profile? |
-| 3 | What is the Repository Pattern? Why is it used? |
-| 4 | What is the difference between Repository Pattern and Generic Repository? |
-| 5 | What is Unit of Work? How does it work with Repository Pattern? |
-| 6 | What is a Service Layer? How is it different from a Repository? |
-| 7 | What is the difference between Authentication and Authorization? |
-| 8 | What is JWT? How does it work in ASP.NET Core? |
-| 9 | What is a Circular Reference in EF Core? How do you fix it? |
-| 10 | What is Blocking in SQL Server? How is it different from Deadlock? |
-| 11 | How do nested transactions work in SQL Server? |
-| 12 | When can you UPDATE through a View in SQL Server? |
+| #   | Question                                                                  |
+| --- | ------------------------------------------------------------------------- |
+| 1   | What is a DTO? Why do we use it instead of returning entities?            |
+| 2   | What is AutoMapper? How do you configure a mapping profile?               |
+| 3   | What is the Repository Pattern? Why is it used?                           |
+| 4   | What is the difference between Repository Pattern and Generic Repository? |
+| 5   | What is Unit of Work? How does it work with Repository Pattern?           |
+| 6   | What is a Service Layer? How is it different from a Repository?           |
+| 7   | What is the difference between Authentication and Authorization?          |
+| 8   | What is JWT? How does it work in ASP.NET Core?                            |
+| 9   | What is a Circular Reference in EF Core? How do you fix it?               |
+| 10  | What is Blocking in SQL Server? How is it different from Deadlock?        |
+| 11  | How do nested transactions work in SQL Server?                            |
+| 12  | When can you UPDATE through a View in SQL Server?                         |
 
 ---
 
-*[← Back to README](./README.md)*
+_[← Back to README](./README.md)_
