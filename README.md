@@ -14,6 +14,7 @@
 | 3   | [Advanced SQL Server](./Module3_Advanced_SQL.md)  | Window functions, CTE, Views, Indexes, SP, Triggers, Transactions |
 | 4   | [EF Core 8 & Dapper](./Module4_EFCore_Dapper.md)  | ORM, CRUD, LINQ, Migrations, Relationships, Dapper queries        |
 | 5   | [ASP.NET Core 8](./Module5_ASPNETCore8.md)        | MVC, Routing, Forms, State Management, DI, Deployment             |
+| 🌟  | [**Bonus: Extra Topics**](./Bonus_Extra_Topics.md) | DTO, AutoMapper, Repository Pattern, Unit of Work, JWT Auth, Circular Reference, Locking, Nested Transactions |
 
 ---
 
