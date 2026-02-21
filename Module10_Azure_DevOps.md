@@ -29,11 +29,32 @@
 
 ### Cloud Service Models
 
-| Model                     | You Manage    | Provider Manages                     | Example           |
+| Model                     | You Manage    | Provider Manages                     | Azure Example     |
 | ------------------------- | ------------- | ------------------------------------ | ----------------- |
 | **IaaS** (Infrastructure) | OS, App, Data | Hardware, Networking, Virtualization | Azure VMs         |
 | **PaaS** (Platform)       | App, Data     | OS, Runtime, Hardware                | Azure App Service |
 | **SaaS** (Software)       | Nothing       | Everything                           | Office 365, Gmail |
+
+#### Real-World Comparison
+
+| Model    | Azure Example             | What you do                                            | What Azure does                               |
+| -------- | ------------------------- | ------------------------------------------------------ | --------------------------------------------- |
+| **IaaS** | **Azure Virtual Machine** | Install OS, install .NET, deploy app, patch the server | Provides hardware, virtualization, networking |
+| **PaaS** | **Azure App Service**     | Push your code (`dotnet publish` / zip deploy)         | Manages OS, .NET runtime, patching, scaling   |
+| **PaaS** | **Azure SQL Database**    | Create tables, write queries                           | Manages SQL Server engine, backups, HA        |
+| **SaaS** | **Office 365**            | Log in and use Word, Outlook, Teams                    | Manages everything end-to-end                 |
+| **SaaS** | **Azure DevOps**          | Create pipelines, boards, repos                        | Hosts and operates the entire platform        |
+| **SaaS** | **GitHub**                | Push code, create PRs                                  | Manages all infrastructure                    |
+
+**Analogy — Pizza as a Service:**
+
+```
+IaaS = You rent the kitchen + oven. You buy ingredients, make and cook the pizza.
+PaaS = Pizza dough + sauce provided. You add toppings and bake it.
+SaaS = Order a pizza for delivery. You just eat it.
+```
+
+**Interview Answer:** _"IaaS (e.g., Azure VM) gives you a virtual machine — you install the OS, runtime, and app, and you manage everything above the hardware. PaaS (e.g., Azure App Service or Azure SQL) lets you deploy just your code or data while Azure manages the OS and runtime. SaaS (e.g., Office 365, Azure DevOps) is fully managed — you just use the software."_
 
 ### Types of Clouds
 

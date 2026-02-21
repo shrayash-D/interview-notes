@@ -777,6 +777,180 @@ pm.test("Save auth token", () => {
 
 ---
 
+## 6.15 [ApiController] Attribute — In Detail
+
+> `[ApiController]` is applied to a controller class and enables **4 automatic behaviors** that make Web API development cleaner.
+
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+public class EmployeesController : ControllerBase
+{
+    // ...
+}
+```
+
+| Behavior                          | What it does                                                                                      |
+| --------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **1. Automatic Model Validation** | Returns `400 Bad Request` automatically if `ModelState.IsValid` is false — no manual check needed |
+| **2. Auto `[FromBody]` binding**  | Complex types are automatically bound from the request body — no need to write `[FromBody]`       |
+| **3. RFC 7807 Problem Details**   | Error responses use the standard `ProblemDetails` JSON format automatically                       |
+| **4. Requires Attribute Routing** | Convention-based routing (e.g., `{controller}/{action}`) does NOT work — must use `[Route]`       |
+
+```csharp
+// ─── Without [ApiController] ─────────────────────────────────────────────
+[HttpPost]
+public IActionResult Create([FromBody] CreateEmployeeDto dto)  // Must specify [FromBody]
+{
+    if (!ModelState.IsValid)                                   // Must check manually
+        return BadRequest(ModelState);
+
+    // ...
+}
+
+// ─── With [ApiController] ────────────────────────────────────────────────
+[HttpPost]
+public IActionResult Create(CreateEmployeeDto dto)             // [FromBody] inferred ✅
+{
+    // ModelState.IsValid already checked — returns 400 automatically ✅
+    // No need for the if (!ModelState.IsValid) block
+    // ...
+}
+```
+
+**RFC 7807 ProblemDetails format (auto-generated on 400):**
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": {
+    "Name": ["The Name field is required."],
+    "Salary": ["The field Salary must be between 0 and 1000000."]
+  }
+}
+```
+
+**Interview Answer:** _"`[ApiController]` enables four automatic behaviors: automatic 400 validation without manual `ModelState.IsValid` checks, automatic `[FromBody]` binding for complex types, RFC 7807 ProblemDetails error format, and it requires attribute routing — convention-based routing won't work."_
+
+---
+
+## 6.16 Role-Based Authorization (RBAC)
+
+> **Role-Based Authorization** restricts access to actions based on the **roles** assigned to the authenticated user.
+
+```csharp
+// ─── 1. Assign roles when generating the JWT ──────────────────────────────
+var claims = new[]
+{
+    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+    new Claim(ClaimTypes.Email, user.Email),
+    new Claim(ClaimTypes.Role, "Admin"),     // Role claim in the token
+    new Claim(ClaimTypes.Role, "Manager"),   // A user can have multiple roles
+};
+
+// ─── 2. Protect actions with [Authorize] ─────────────────────────────────
+[Authorize(Roles = "Admin")]                // Only Admin
+public IActionResult DeleteEmployee(int id) { ... }
+
+[Authorize(Roles = "Admin,Manager")]        // Admin OR Manager (either one)
+public IActionResult ViewReports() { ... }
+
+[AllowAnonymous]                            // No auth required
+public IActionResult GetPublicInfo() { ... }
+
+
+// ─── 3. Named Policies (recommended for complex rules) ────────────────────
+// In Program.cs
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly",     policy => policy.RequireRole("Admin"));
+    options.AddPolicy("ManagerOrHR",   policy => policy.RequireRole("Manager", "HR"));
+    options.AddPolicy("SeniorOnly",    policy => policy.RequireClaim("Level", "Senior"));
+});
+
+// On controller / action
+[Authorize(Policy = "AdminOnly")]
+public IActionResult ManageUsers() { ... }
+
+[Authorize(Policy = "ManagerOrHR")]
+public IActionResult ViewSalaries() { ... }
+
+
+// ─── 4. Check roles / claims in code ─────────────────────────────────────
+public IActionResult Dashboard()
+{
+    var userId  = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var email   = User.FindFirst(ClaimTypes.Email)?.Value;
+    bool isAdmin = User.IsInRole("Admin");       // true/false
+
+    if (isAdmin)
+    {
+        // Show admin dashboard
+    }
+
+    return View();
+}
+```
+
+**Pipeline (Authentication before Authorization):**
+
+```csharp
+// Program.cs — ORDER MATTERS
+app.UseAuthentication();   // Reads JWT, populates User (ClaimsPrincipal)  ← FIRST
+app.UseAuthorization();    // Checks [Authorize] attributes                ← SECOND
+```
+
+**Interview Answer:** _"Role-based authorization uses the `[Authorize(Roles = "Admin")]` attribute. Roles are added as claims in the JWT token when it's generated. For complex scenarios, named policies with `AddPolicy` in `Program.cs` are cleaner. You can also check roles in code with `User.IsInRole("Admin")`. Authentication middleware must run before Authorization middleware."_
+
+---
+
+## 6.17 MVC vs Web API
+
+> In ASP.NET Core 8, both MVC and Web API use the same framework — the difference is in the **base class** used and **what they return**.
+
+| Aspect            | **ASP.NET Core MVC**              | **ASP.NET Core Web API**                            |
+| ----------------- | --------------------------------- | --------------------------------------------------- |
+| Base class        | `Controller` (has View support)   | `ControllerBase` (no View support)                  |
+| Returns           | Views (HTML pages)                | JSON / XML data                                     |
+| Consumers         | Browser (users viewing web pages) | Mobile apps, SPA, other APIs, microservices         |
+| Routing           | Convention + Attribute            | Attribute routing (required with `[ApiController]`) |
+| View Engine       | ✅ Razor (`.cshtml`)              | ❌ No views                                         |
+| `[ApiController]` | ❌ Not typically used             | ✅ Used on all API controllers                      |
+| Status codes      | Redirect, views for errors        | Returns `200`, `201`, `400`, `404`, `500` etc.      |
+
+```csharp
+// ─── MVC Controller ───────────────────────────────────────────────────────
+public class HomeController : Controller    // Inherits Controller
+{
+    public IActionResult Index()
+    {
+        var employees = _repo.GetAll();
+        return View(employees);            // Returns a Razor view (HTML)
+    }
+}
+
+// ─── Web API Controller ───────────────────────────────────────────────────
+[ApiController]
+[Route("api/[controller]")]
+public class EmployeesController : ControllerBase   // Inherits ControllerBase
+{
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetAll()
+    {
+        var employees = await _repo.GetAllAsync();
+        return Ok(employees);              // Returns JSON ✅
+    }
+}
+```
+
+> **Both can coexist in the same ASP.NET Core 8 project.** A typical enterprise app has both: MVC controllers for admin pages and API controllers for mobile/SPA consumers.
+
+**Interview Answer:** _"MVC controllers inherit from `Controller` and return Razor views (HTML) for browser-based web apps. Web API controllers inherit from `ControllerBase`, use `[ApiController]`, and return JSON/XML for consumption by mobile apps, SPAs, or other services. Both can exist in the same project."_
+
+---
+
 ## 🎯 Interview Questions for Module 6
 
 | #   | Question                                                                   |

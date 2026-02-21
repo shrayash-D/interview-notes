@@ -163,6 +163,224 @@ public struct Buffer
 
 ---
 
+## 1.3 C# Core Concepts
+
+### CLR — Common Language Runtime
+
+> The **CLR** is the execution engine of the .NET runtime. It takes your compiled code (IL) and runs it on the machine.
+
+**Compilation flow:**
+
+```
+Source Code (.cs) → C# Compiler → MSIL / CIL (.dll) → CLR (JIT Compiler) → Native Machine Code
+```
+
+| CLR Responsibility     | What It Does                                         |
+| ---------------------- | ---------------------------------------------------- |
+| **JIT Compilation**    | Converts IL → native machine code at runtime         |
+| **Garbage Collection** | Automatically frees unused heap memory               |
+| **Type Safety**        | Prevents illegal memory access / invalid type casts  |
+| **Exception Handling** | Common exception model across all .NET languages     |
+| **Thread Management**  | Manages thread creation, scheduling, synchronization |
+| **Security**           | Code Access Security, sandboxing                     |
+
+**Interview Answer:** _"CLR is the execution engine of .NET. C# compiles to Intermediate Language (IL), and the CLR's JIT compiler converts IL to native machine code at runtime. CLR also handles garbage collection, exception handling, type safety, and thread management."_
+
+---
+
+### async / await
+
+> `async`/`await` enables **non-blocking** asynchronous code that reads like synchronous code. The key point: the **thread is released** while waiting — it doesn't sit idle.
+
+```csharp
+// ✅ CORRECT — thread released while waiting for DB/network
+public async Task<Employee> GetEmployeeAsync(int id)
+{
+    return await _context.Employees.FindAsync(id);  // Thread released here
+}
+
+// ❌ WRONG — .Result/.Wait() blocks the thread and can DEADLOCK
+public Employee GetEmployee(int id)
+{
+    return _context.Employees.FindAsync(id).Result;  // Blocks thread!
+}
+
+// Run multiple tasks in parallel
+public async Task<(List<Employee>, List<Department>)> GetAllAsync()
+{
+    var empTask  = _context.Employees.ToListAsync();
+    var deptTask = _context.Departments.ToListAsync();
+    await Task.WhenAll(empTask, deptTask);          // Both run simultaneously
+    return (empTask.Result, deptTask.Result);
+}
+```
+
+| Rule                        | Detail                                                 |
+| --------------------------- | ------------------------------------------------------ |
+| Return type                 | `Task` (void) or `Task<T>` (with return value)         |
+| `async void`                | Only for event handlers — no error propagation         |
+| Never use `.Result`/`.Wait` | Risk of deadlock in ASP.NET Core                       |
+| Suffix convention           | Method names end in `Async` (e.g., `GetEmployeeAsync`) |
+| Parallel tasks              | Use `Task.WhenAll(t1, t2)` to run tasks simultaneously |
+
+**Interview Answer:** _"When the `await` keyword is hit, the thread is released back to the thread pool while the I/O completes. For Web APIs, async = thousands of concurrent requests. Sync = ~100 before thread pool is exhausted. Never use `.Result` or `.Wait()` — they block the thread and can cause deadlocks."_
+
+---
+
+### Types of Classes in C#
+
+| Class Type   | Key Rule                                                  | Example / Use Case                             |
+| ------------ | --------------------------------------------------------- | ---------------------------------------------- |
+| **abstract** | Cannot instantiate; force subclasses to implement members | `Animal` → `Dog`, `Cat`                        |
+| **sealed**   | Cannot inherit from it                                    | `string` is sealed; security-sensitive classes |
+| **static**   | No instances; only static members                         | `Math`, `Console`, utility/helper classes      |
+| **partial**  | Split across multiple files; combined at compile time     | Code-behind in WinForms/WPF, generated code    |
+
+```csharp
+// abstract — template for subclasses
+public abstract class Animal
+{
+    public abstract string Sound();      // Must override
+    public void Breathe() { }           // Concrete method — shared
+}
+
+// sealed — no further inheritance allowed
+public sealed class FinalImpl : Animal
+{
+    public override string Sound() => "...";
+}
+
+// static — utility class
+public static class MathHelper
+{
+    public static int Square(int x) => x * x;
+}
+
+// partial — split across files
+// File1.cs
+public partial class OrderProcessor
+{
+    public void Validate() { }
+}
+// File2.cs
+public partial class OrderProcessor
+{
+    public void Save() { }
+}
+```
+
+**Abstract class vs Interface:**
+
+| Aspect         | Abstract Class                | Interface                    |
+| -------------- | ----------------------------- | ---------------------------- |
+| Instantiate    | ❌ No                         | ❌ No                        |
+| State / Fields | ✅ Yes                        | ❌ No (only properties)      |
+| Implementation | ✅ Can have concrete methods  | ✅ Default methods (C# 8+)   |
+| Inheritance    | Single (one base class)       | Multiple interfaces allowed  |
+| Relationship   | "is-a" (Dog **is an** Animal) | "can-do" (Dog **can** ISwim) |
+
+---
+
+### `const` vs `readonly`
+
+| Aspect         | `const`                      | `readonly`                          |
+| -------------- | ---------------------------- | ----------------------------------- |
+| When set       | Compile-time                 | Runtime (in constructor or inline)  |
+| Always static? | ✅ Yes (implicitly static)   | ❌ No (can be instance or `static`) |
+| Allowed types  | Primitives and `string` only | Any type (objects, arrays, etc.)    |
+| Changeable?    | Never                        | Only in constructor                 |
+
+```csharp
+public class Config
+{
+    public const double Pi = 3.14159;                  // Compile-time constant
+    public const string AppName = "MyApp";
+
+    public readonly string ConnectionString;           // Set once at runtime
+    public static readonly DateTime AppStart          // Static readonly
+        = DateTime.UtcNow;
+
+    public Config(string connStr)
+    {
+        ConnectionString = connStr;                    // Allowed in constructor ✅
+    }
+}
+```
+
+---
+
+### Extension Methods
+
+> **Extension methods** allow you to add methods to an existing type **without modifying it** — no inheritance or source access needed.
+
+**Rules:**
+
+- Must be in a **`static` class**
+- Method must be **`static`**
+- First parameter must have the **`this`** keyword
+
+```csharp
+public static class StringExtensions
+{
+    // Adds IsNullOrEmpty() directly to any string variable
+    public static bool IsNullOrEmpty(this string value)
+        => string.IsNullOrEmpty(value);
+
+    public static string ToCamelCase(this string value)
+        => string.IsNullOrEmpty(value) ? value
+           : char.ToLower(value[0]) + value[1..];
+}
+
+// Usage — called like an instance method
+string name = "Hello";
+bool empty = name.IsNullOrEmpty();        // ✅ Extension method call
+string camel = "MyVariable".ToCamelCase(); // → "myVariable"
+```
+
+> **LINQ is entirely extension methods** on `IEnumerable<T>` and `IQueryable<T>`. `Where`, `Select`, `OrderBy` are all extension methods defined in `System.Linq`.
+
+---
+
+### Reflection
+
+> **Reflection** allows you to **inspect and manipulate types, properties, and methods at runtime** — even when you don't know them at compile time.
+
+```csharp
+// Inspect a type at runtime
+Type type = typeof(Employee);
+Console.WriteLine(type.Name);            // "Employee"
+
+// Get all public properties
+PropertyInfo[] props = type.GetProperties();
+foreach (var p in props)
+    Console.WriteLine($"{p.Name}: {p.PropertyType.Name}");
+
+// Create instance dynamically (without knowing the type at compile time)
+object emp = Activator.CreateInstance(typeof(Employee));
+
+// Set a property value dynamically
+PropertyInfo nameProp = type.GetProperty("Name");
+nameProp.SetValue(emp, "John Doe");
+
+// Invoke a method dynamically
+MethodInfo method = type.GetMethod("GetFullName");
+var result = method.Invoke(emp, null);
+```
+
+**Where Reflection is used:**
+
+| Framework / Tool | How it uses Reflection                      |
+| ---------------- | ------------------------------------------- |
+| EF Core          | Maps properties to DB columns automatically |
+| DI containers    | Resolves constructor parameters at runtime  |
+| JSON serializers | Reads/writes properties by name at runtime  |
+| Test frameworks  | Discovers `[Test]` methods and runs them    |
+| AutoMapper       | Maps property names between objects         |
+
+**Downside:** Slower than direct code (no compile-time checks, uses late binding). Use sparingly in hot paths.
+
+---
+
 ## 📝 Quick Recap
 
 | Feature                     | Version | One-liner                                      |

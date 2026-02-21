@@ -427,6 +427,39 @@ public class EmployeeController : Controller
 }
 ```
 
+#### Why DbContext must be Scoped (not Singleton)
+
+```csharp
+// ❌ WRONG — Singleton DbContext
+builder.Services.AddSingleton<AppDbContext>();
+// Problem: One shared DbContext for ALL requests
+// → User A's pending changes bleed into User B's request
+// → Change tracker state corrupted across concurrent requests
+// → Race conditions, data corruption ❌
+
+// ✅ CORRECT — Scoped DbContext (one per HTTP request)
+builder.Services.AddScoped<AppDbContext>();
+// → Each request gets its own DbContext instance
+// → User A's changes are fully isolated from User B's
+// → Change tracker is fresh for every request ✅
+```
+
+#### Verifying Lifetimes (quick test)
+
+```csharp
+// Inject the same service twice in one controller to compare instances
+public class TestController : Controller
+{
+    public TestController(IMyService s1, IMyService s2)
+    {
+        bool same = ReferenceEquals(s1, s2);
+        // Transient  → false  (two different instances even in same request)
+        // Scoped     → true   (same instance throughout this request)
+        // Singleton  → true   (same instance for entire app lifetime)
+    }
+}
+```
+
 **Interview Answer:** "DI is a pattern where dependencies are injected from outside instead of being created inside a class. ASP.NET Core has a built-in IoC container. There are three lifetimes: Transient (new every time), Scoped (once per request), and Singleton (once for the whole app). This follows the Dependency Inversion Principle."
 
 ---
@@ -465,6 +498,61 @@ app.Use(async (context, next) =>
     Console.WriteLine($"Response: {context.Response.StatusCode}");
 });
 ```
+
+### app.Use vs app.Run vs app.Map
+
+| Method    | Calls next?                   | Use case                                            |
+| --------- | ----------------------------- | --------------------------------------------------- |
+| `app.Use` | ✅ Yes (calls `await next()`) | Normal middleware — has logic before AND after next |
+| `app.Run` | ❌ No (terminal)              | Short-circuits the pipeline — response ends here    |
+| `app.Map` | Branches pipeline             | Route-specific logic for a path prefix              |
+
+```csharp
+// app.Use — has a "before" and "after" phase around next()
+app.Use(async (context, next) =>
+{
+    Console.WriteLine("Middleware 1 — BEFORE");
+    await next();                                  // Passes to next middleware
+    Console.WriteLine("Middleware 1 — AFTER");     // Runs after response comes back
+});
+
+app.Use(async (context, next) =>
+{
+    Console.WriteLine("Middleware 2 — BEFORE");
+    await next();
+    Console.WriteLine("Middleware 2 — AFTER");
+});
+
+// app.Run — TERMINAL, never calls next
+app.Run(async context =>
+{
+    Console.WriteLine("Terminal middleware");
+    await context.Response.WriteAsync("Hello from terminal!");
+    // Pipeline STOPS here — nothing after this runs
+});
+
+// If app.Run is placed before app.Use, the later Use NEVER runs! ⚠️
+
+// Execution order output:
+// → Middleware 1 BEFORE
+//   → Middleware 2 BEFORE
+//     → Terminal middleware (response written)
+//   → Middleware 2 AFTER
+// → Middleware 1 AFTER
+
+
+// app.Map — branches for a specific path prefix
+app.Map("/api/health", healthApp =>
+{
+    healthApp.Run(async context =>
+    {
+        await context.Response.WriteAsync("Healthy ✅");
+    });
+    // Only runs when path starts with /api/health
+});
+```
+
+**Interview Answer:** _"`app.Use` adds middleware that can process the request AND response — it calls `await next()` to pass control to the next middleware. `app.Run` is terminal — it handles the request and ends the pipeline without calling next. `app.Map` branches the pipeline for requests matching a specific path prefix. Order matters: `app.Run` before `app.Use` means the `Use` middleware never executes."_
 
 ---
 

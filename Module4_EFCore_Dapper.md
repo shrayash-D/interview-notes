@@ -440,6 +440,131 @@ connection.BulkMerge(employeesList);
 
 ---
 
+## 4.13 IEnumerable vs IQueryable vs ICollection
+
+> A very common interview question — these three interfaces look similar but behave very differently, especially with EF Core.
+
+| Interface       | Where filtering happens   | Loads data when?               | Use case                                |
+| --------------- | ------------------------- | ------------------------------ | --------------------------------------- |
+| **IQueryable**  | In the **database** (SQL) | On `.ToList()` / terminal call | EF Core queries — always prefer this    |
+| **IEnumerable** | In **C# memory**          | Immediately when assigned      | In-memory collections, LINQ to Objects  |
+| **ICollection** | In **C# memory**          | Already loaded                 | Navigation properties, Add/Remove/Count |
+
+```csharp
+// ─── IQueryable<T> — deferred, runs in DB ─────────────────────────────────
+IQueryable<Employee> query = _context.Employees
+    .Where(e => e.Salary > 50000);              // ← No SQL executed yet!
+
+var result = query.ToList();                    // ← SQL runs NOW
+// Generated SQL: SELECT * FROM Employees WHERE Salary > 50000
+
+// Chain more filters — still builds SQL
+var filtered = _context.Employees
+    .Where(e => e.DepartmentId == 1)
+    .OrderBy(e => e.Name)
+    .Take(10)
+    .ToList();                                  // One efficient SQL query ✅
+
+
+// ─── IEnumerable<T> — in-memory, loads everything first ──────────────────
+IEnumerable<Employee> allEmps = _context.Employees.ToList();  // Loads ALL rows!
+var highEarners = allEmps.Where(e => e.Salary > 50000);       // Filters in C# ❌ slow
+
+// ⚠️ Performance trap with a 1 million row table:
+// IQueryable → fetches ~10 matching rows from DB ✅
+// IEnumerable → fetches 1,000,000 rows into memory, then filters in C# ❌
+
+
+// ─── ICollection<T> — for navigation properties (already in memory) ───────
+public class Department
+{
+    public int DepartmentId { get; set; }
+    public string Name { get; set; }
+    public ICollection<Employee> Employees { get; set; }  // Navigation prop ✅
+}
+
+// ICollection supports Add, Remove, Count, Contains
+department.Employees.Add(newEmployee);
+int count = department.Employees.Count;
+```
+
+**When to use which:**
+
+| Scenario                               | Use                |
+| -------------------------------------- | ------------------ |
+| Querying database (filtering, paging)  | `IQueryable<T>` ✅ |
+| Already loaded in memory, looping      | `IEnumerable<T>`   |
+| Navigation property in EF Core entity  | `ICollection<T>`   |
+| Need Add/Remove on a loaded collection | `ICollection<T>`   |
+
+**Interview Answer:** _"IQueryable builds the SQL query and runs it in the database — only when you call ToList() or similar. IEnumerable loads everything into memory first and then filters in C#, which is very inefficient for large tables. ICollection is for in-memory collections that are already loaded — it supports Add/Remove/Count and is typically used for navigation properties in EF Core."_
+
+---
+
+## 4.14 Fluent API Configuration in EF Core
+
+> **Fluent API** configures entity-to-table mappings in code — in the `OnModelCreating` override of your `DbContext`. It is more powerful than Data Annotations and keeps entity classes clean.
+
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.Entity<Employee>(entity =>
+    {
+        // Table and schema name
+        entity.ToTable("tbl_Employees", schema: "hr");
+
+        // Column configuration
+        entity.Property(e => e.Name)
+              .IsRequired()
+              .HasMaxLength(100)
+              .HasColumnName("EmployeeName");
+
+        entity.Property(e => e.Salary)
+              .HasColumnType("decimal(18,2)")
+              .HasDefaultValue(0);
+
+        entity.Property(e => e.CreatedAt)
+              .HasDefaultValueSql("GETUTCDATE()");  // DB-side default
+
+        // Unique index
+        entity.HasIndex(e => e.Email)
+              .IsUnique();
+
+        // Composite index
+        entity.HasIndex(e => new { e.DepartmentId, e.Name });
+
+        // Relationship: Many employees → One department
+        entity.HasOne(e => e.Department)
+              .WithMany(d => d.Employees)
+              .HasForeignKey(e => e.DepartmentId)
+              .OnDelete(DeleteBehavior.Restrict);   // Prevent cascade delete
+    });
+
+    // Composite Primary Key (can only be done with Fluent API, not Data Annotations)
+    modelBuilder.Entity<OrderItem>()
+        .HasKey(oi => new { oi.OrderId, oi.ProductId });
+}
+```
+
+**Fluent API vs Data Annotations:**
+
+| Aspect              | Data Annotations                   | Fluent API                               |
+| ------------------- | ---------------------------------- | ---------------------------------------- |
+| Location            | On the entity class (attributes)   | In `OnModelCreating` in DbContext        |
+| Entity cleanliness  | ❌ Entity has persistence concerns | ✅ Entity is a clean POCO                |
+| Power / flexibility | Limited                            | Full control                             |
+| Composite keys      | ❌ Not supported                   | ✅ Supported                             |
+| Preferred when      | Simple projects, quick setup       | Production apps, DDD, clean architecture |
+
+**Use Fluent API when:**
+
+- You cannot or don't want to modify the entity class
+- You need composite keys
+- You need complex relationship configuration
+- You want to keep entities as clean POCOs
+
+---
+
 ## 📝 EF Core & Dapper Quick Recap
 
 | Topic                | Key Point                                    |

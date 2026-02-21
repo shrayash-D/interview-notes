@@ -35,6 +35,45 @@
 
 ---
 
+## 3.1a Primary Key vs Unique Key
+
+> Both enforce uniqueness on a column — but with important differences.
+
+| Aspect              | **Primary Key**               | **Unique Key**                         |
+| ------------------- | ----------------------------- | -------------------------------------- |
+| NULL allowed?       | ❌ Never (NOT NULL enforced)  | ✅ One NULL allowed per column         |
+| Per table           | Only **1** primary key        | **Multiple** unique keys allowed       |
+| Index created       | Clustered index (by default)  | Non-clustered index (by default)       |
+| FK reference target | ✅ FKs typically reference PK | ✅ FK can also reference a Unique Key  |
+| Purpose             | Uniquely identifies every row | Enforces uniqueness for alternate keys |
+
+```sql
+CREATE TABLE Employees (
+    EmployeeId  INT          PRIMARY KEY,           -- PK: not null, clustered, 1 per table
+    Email       VARCHAR(100) UNIQUE,                -- UK: allows 1 null, non-clustered
+    Phone       VARCHAR(20)  UNIQUE,                -- Multiple UKs allowed ✅
+    Name        VARCHAR(100) NOT NULL
+);
+
+-- Composite Primary Key
+CREATE TABLE OrderItems (
+    OrderId    INT,
+    ProductId  INT,
+    Quantity   INT,
+    PRIMARY KEY (OrderId, ProductId)                -- Composite PK
+);
+
+-- A Foreign Key can reference a Unique Key too
+CREATE TABLE Invoices (
+    InvoiceId  INT PRIMARY KEY,
+    Email      VARCHAR(100) REFERENCES Employees(Email)  -- Referencing UK ✅
+);
+```
+
+**Interview Answer:** _"A Primary Key enforces uniqueness AND NOT NULL. Only one PK per table; it creates a clustered index. A Unique Key also enforces uniqueness but allows one NULL per column, and you can have multiple unique keys per table. Both can be referenced by foreign keys."_
+
+---
+
 ## 3.2 Advanced SQL Concepts
 
 ### OVER() Clause
@@ -346,6 +385,23 @@ RETURN (
 );
 
 SELECT * FROM fn_GetEmployeesByDept('IT');
+
+-- Multi-Statement Table-Valued Function
+-- Use when you need multiple statements / conditional logic before returning
+CREATE FUNCTION dbo.GetTopEarners(@TopN INT)
+RETURNS @Result TABLE (Name NVARCHAR(100), Salary DECIMAL(18,2))
+AS
+BEGIN
+    INSERT INTO @Result
+    SELECT TOP (@TopN) Name, Salary
+    FROM Employees
+    ORDER BY Salary DESC;
+
+    -- Can do more logic here (IF, WHILE, multiple INSERTs, etc.)
+    RETURN;
+END;
+
+SELECT * FROM dbo.GetTopEarners(5);
 ```
 
 ### Stored Procedure vs Function
