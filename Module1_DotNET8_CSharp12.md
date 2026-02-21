@@ -1,0 +1,180 @@
+# 📌 MODULE 1: .NET 8 AND C# 12
+
+---
+
+## 1.1 Introduction to .NET 8
+
+### What is .NET?
+
+> **.NET** is a **free, open-source developer platform** by Microsoft for building many types of applications — web, desktop, mobile, cloud, gaming, IoT, etc.
+
+**Interview Answer:** ".NET is a cross-platform, open-source framework by Microsoft that provides tools and libraries to build all kinds of applications like web APIs, desktop apps, and cloud services."
+
+---
+
+### Evolution: .NET Framework → .NET 6 → .NET 8
+
+| Version                   | Key Point                                                  |
+| ------------------------- | ---------------------------------------------------------- |
+| **.NET Framework** (2002) | Windows-only, runs on CLR (Common Language Runtime)        |
+| **.NET Core** (2016)      | Cross-platform rewrite, open-source, faster                |
+| **.NET 5** (2020)         | Unified .NET Core + .NET Framework into one platform       |
+| **.NET 6** (2021)         | LTS (Long Term Support), Minimal APIs introduced           |
+| **.NET 7** (2022)         | Performance improvements, short-term support               |
+| **.NET 8** (2023)         | **LTS**, best performance yet, Native AOT, improved Blazor |
+
+**Interview Answer:** "Microsoft evolved from the Windows-only .NET Framework to the cross-platform .NET Core, then unified everything into a single .NET platform starting from .NET 5. .NET 8 is the latest LTS version with major performance improvements."
+
+---
+
+### Key Features and Improvements in .NET 8
+
+| Feature                                    | Simple Explanation                                                                |
+| ------------------------------------------ | --------------------------------------------------------------------------------- |
+| **Native AOT (Ahead-of-Time Compilation)** | App is compiled to machine code at build time → faster startup, smaller size      |
+| **Performance Improvements**               | Up to 20% faster than .NET 7 in many benchmarks                                   |
+| **Improved Blazor**                        | Unified full-stack web UI with server + client rendering                          |
+| **Minimal APIs Enhancements**              | Easier to build lightweight APIs with less code                                   |
+| **Garbage Collector Improvements**         | Better memory management                                                          |
+| **JSON Improvements**                      | Faster System.Text.Json serialization                                             |
+| **Time Abstraction**                       | New `TimeProvider` class makes testing time-based code easier                     |
+| **Frozen Collections**                     | `FrozenDictionary`, `FrozenSet` — read-only collections optimized for fast lookup |
+
+**Example — Frozen Collection:**
+
+```csharp
+// Frozen collections are optimized for read-heavy scenarios
+FrozenDictionary<string, int> ages = new Dictionary<string, int>
+{
+    { "Alice", 30 },
+    { "Bob", 25 }
+}.ToFrozenDictionary();
+
+int age = ages["Alice"]; // Super fast lookup!
+```
+
+---
+
+## 1.2 C# 12 Features
+
+### New Features in C# 12
+
+#### 1️⃣ Primary Constructors (for Classes & Structs)
+
+> You can now add constructor parameters directly in the class declaration — less boilerplate code.
+
+```csharp
+// ❌ Old way (C# 11 and before)
+public class Person
+{
+    private string _name;
+    private int _age;
+
+    public Person(string name, int age)
+    {
+        _name = name;
+        _age = age;
+    }
+}
+
+// ✅ New way (C# 12)
+public class Person(string name, int age)
+{
+    public string Name => name;
+    public int Age => age;
+}
+```
+
+**Interview Answer:** "Primary constructors let you define constructor parameters directly on the class/struct declaration, reducing boilerplate code. The parameters are available throughout the class body."
+
+---
+
+#### 2️⃣ Collection Expressions
+
+> A simpler, unified syntax to create collections using `[ ]`.
+
+```csharp
+// ❌ Old way
+int[] numbers = new int[] { 1, 2, 3 };
+List<string> names = new List<string> { "Alice", "Bob" };
+
+// ✅ New way (C# 12)
+int[] numbers = [1, 2, 3];
+List<string> names = ["Alice", "Bob"];
+
+// Spread operator (..) to combine collections
+int[] first = [1, 2, 3];
+int[] second = [4, 5, 6];
+int[] combined = [..first, ..second]; // [1, 2, 3, 4, 5, 6]
+```
+
+---
+
+#### 3️⃣ Default Lambda Parameters
+
+> Lambda expressions can now have default parameter values.
+
+```csharp
+// ✅ C# 12
+var greet = (string name = "World") => $"Hello, {name}!";
+
+Console.WriteLine(greet());        // "Hello, World!"
+Console.WriteLine(greet("Alice")); // "Hello, Alice!"
+```
+
+---
+
+#### 4️⃣ Alias Any Type
+
+> You can now use `using` alias for ANY type — tuples, arrays, generics, etc.
+
+```csharp
+// ✅ C# 12
+using Point = (int X, int Y);
+using NumberList = System.Collections.Generic.List<int>;
+
+Point p = (10, 20);
+NumberList nums = [1, 2, 3];
+```
+
+---
+
+#### 5️⃣ Inline Arrays
+
+> Fixed-size arrays allocated on the stack for high-performance scenarios.
+
+```csharp
+[System.Runtime.CompilerServices.InlineArray(10)]
+public struct Buffer
+{
+    private int _element;
+}
+```
+
+---
+
+#### 6️⃣ Interceptors (Experimental)
+
+> Allows rerouting method calls to different implementations at compile time. Used mainly by source generators.
+
+---
+
+**Interview Answer:** "C# 12 introduces primary constructors for classes, collection expressions with a simpler `[]` syntax, default lambda parameters, and the ability to alias any type. These features reduce boilerplate and make code cleaner."
+
+---
+
+## 📝 Quick Recap
+
+| Feature                     | Version | One-liner                                      |
+| --------------------------- | ------- | ---------------------------------------------- |
+| Primary Constructors        | C# 12   | Define constructor params on class declaration |
+| Collection Expressions `[]` | C# 12   | Unified syntax to create any collection        |
+| Default Lambda Params       | C# 12   | Lambda can have default values                 |
+| Alias Any Type              | C# 12   | `using` for tuples, arrays, generics           |
+| Native AOT                  | .NET 8  | Compile to machine code at build time          |
+| Frozen Collections          | .NET 8  | Read-only, fast-lookup collections             |
+| Minimal APIs                | .NET 6+ | Lightweight API with minimal code              |
+
+---
+
+_[← Back to README](./README.md)_
