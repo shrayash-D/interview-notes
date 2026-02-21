@@ -14,6 +14,11 @@
 | 3   | [Advanced SQL Server](./Module3_Advanced_SQL.md)   | Window functions, CTE, Views, Indexes, SP, Triggers, Transactions                                             |
 | 4   | [EF Core 8 & Dapper](./Module4_EFCore_Dapper.md)   | ORM, CRUD, LINQ, Migrations, Relationships, Dapper queries                                                    |
 | 5   | [ASP.NET Core 8](./Module5_ASPNETCore8.md)         | MVC, Routing, Forms, State Management, DI, Deployment                                                         |
+| 6   | [ASP.NET Core Web API](./Module6_WebAPI.md)        | REST vs SOAP, CRUD API, Routing, JWT Auth, Serilog, Swagger, Exception Handling, API Keys, OAuth, WCF/SOAP    |
+| 7   | [Microservices Architecture](./Module7_Microservices.md) | Microservices vs Monolith, HTTP/gRPC/Messaging, Service Discovery, SAGA, Health Checks, CI/CD, Docker/K8s |
+| 8   | [Application Debugging](./Module8_Debugging.md)    | Breakpoints, Watch/Locals, Step Into/Over/Out, Exception Settings, Postman+VS debugging, Remote Debug, Profiling |
+| 9   | [Docker Basics](./Module9_Docker.md)               | Docker vs VM, Commands, Dockerfile, Docker Compose, Registry, Engine, Storage, Networking, Kubernetes         |
+| 10  | [Cloud & Azure DevOps](./Module10_Azure_DevOps.md) | Cloud/IaaS/PaaS/SaaS, Azure Compute/Networking/Data/Messaging, AAD, Boards, Repos, Pipelines, Test Plans      |
 | 🌟  | [**Bonus: Extra Topics**](./Bonus_Extra_Topics.md) | DTO, AutoMapper, Repository Pattern, Unit of Work, JWT Auth, Circular Reference, Locking, Nested Transactions |
 
 ---
