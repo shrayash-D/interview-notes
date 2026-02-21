@@ -9,6 +9,7 @@
 > **Docker** is a platform that packages an application and all its dependencies into a **container** — a lightweight, portable, self-contained unit that runs consistently anywhere.
 
 **The Problem Docker Solves:**
+
 ```
 Dev says: "It works on my machine!"
 Docker says: "Ship your machine."
@@ -27,14 +28,14 @@ With Docker:
 
 ## 9.2 Docker vs Virtual Machine
 
-| Feature | Virtual Machine (VM) | Docker Container |
-|---|---|---|
-| **Virtualizes** | Entire OS | Only application and dependencies |
-| **Size** | GBs (full OS image) | MBs (just app + libs) |
-| **Boot time** | Minutes | Seconds |
-| **Performance** | Slower (hypervisor overhead) | Faster (native OS) |
-| **Isolation** | Complete OS isolation | Process-level isolation |
-| **Use case** | Run different OS (Linux on Windows) | Package and run applications |
+| Feature         | Virtual Machine (VM)                | Docker Container                  |
+| --------------- | ----------------------------------- | --------------------------------- |
+| **Virtualizes** | Entire OS                           | Only application and dependencies |
+| **Size**        | GBs (full OS image)                 | MBs (just app + libs)             |
+| **Boot time**   | Minutes                             | Seconds                           |
+| **Performance** | Slower (hypervisor overhead)        | Faster (native OS)                |
+| **Isolation**   | Complete OS isolation               | Process-level isolation           |
+| **Use case**    | Run different OS (Linux on Windows) | Package and run applications      |
 
 ```
 VM:           [App][App][App]
@@ -55,11 +56,11 @@ Docker:       [App][App][App]
 
 ## 9.3 Docker Editions
 
-| Edition | Use Case | Price |
-|---|---|---|
+| Edition            | Use Case                         | Price                            |
+| ------------------ | -------------------------------- | -------------------------------- |
 | **Docker Desktop** | Local development on Windows/Mac | Free for personal/small business |
-| **Docker Engine** | Linux servers (no GUI) | Free, open source |
-| **Docker Hub** | Public image registry | Free for public images |
+| **Docker Engine**  | Linux servers (no GUI)           | Free, open source                |
+| **Docker Hub**     | Public image registry            | Free for public images           |
 
 ---
 
@@ -138,9 +139,11 @@ docker run ubuntu ls /app              # List files and exit
 ## 9.6 Docker Images
 
 ### What is a Docker Image?
+
 > A **Docker Image** is a read-only template (blueprint) for creating containers. It contains the app, runtime, libraries, and config.
 
 ### Image Layers
+
 > Images are built in **layers** — each layer represents one instruction in the Dockerfile. Layers are **cached** and **shared** between images.
 
 ```
@@ -182,6 +185,7 @@ ENTRYPOINT ["dotnet", "MyApi.dll"]
 ```
 
 ### Build and Run the Image
+
 ```bash
 # Build image (tag it as myapi:1.0)
 docker build -t myapi:1.0 .
@@ -197,6 +201,7 @@ curl http://localhost:5000/api/employees
 ```
 
 ### .dockerignore (like .gitignore)
+
 ```
 bin/
 obj/
@@ -211,9 +216,11 @@ obj/
 ## 9.7 Docker Compose
 
 ### What is Docker Compose?
+
 > **Docker Compose** lets you define and run **multi-container applications** with a single `docker-compose.yml` file. Perfect for local development.
 
 **Without Compose:**
+
 ```bash
 # Run 3 containers manually — tedious and error-prone
 docker run -d --name sqlserver -e SA_PASSWORD=... -p 1433:1433 mssql/server
@@ -222,17 +229,18 @@ docker run -d --name myapi -e Db=... --link sqlserver --link redis -p 5000:80 my
 ```
 
 **With Compose:**
+
 ```bash
 docker-compose up -d    # Start everything
 docker-compose down     # Stop everything
 ```
 
 ### docker-compose.yml
+
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
-
   # Your API
   api:
     build:
@@ -248,7 +256,7 @@ services:
       - sqlserver
       - redis
     volumes:
-      - ./logs:/app/logs   # Mount logs folder
+      - ./logs:/app/logs # Mount logs folder
 
   # SQL Server
   sqlserver:
@@ -259,7 +267,7 @@ services:
     ports:
       - "1433:1433"
     volumes:
-      - sqldata:/var/opt/mssql   # Persist data
+      - sqldata:/var/opt/mssql # Persist data
 
   # Redis Cache
   redis:
@@ -268,10 +276,11 @@ services:
       - "6379:6379"
 
 volumes:
-  sqldata:   # Named volume — data survives container restart
+  sqldata: # Named volume — data survives container restart
 ```
 
 ### Docker Compose Commands
+
 ```bash
 docker-compose up                  # Start (foreground)
 docker-compose up -d               # Start (background/detached)
@@ -290,15 +299,16 @@ docker-compose restart api         # Restart one service
 ## 9.8 Docker Registry
 
 ### What is a Docker Registry?
+
 > A **Docker Registry** stores and distributes Docker images. Think of it like GitHub but for Docker images.
 
-| Registry | Description |
-|---|---|
-| **Docker Hub** | Default public registry (hub.docker.com) |
-| **Azure Container Registry (ACR)** | Private registry in Azure |
-| **Amazon ECR** | AWS private registry |
-| **GitHub Container Registry** | GitHub's registry (ghcr.io) |
-| **Self-hosted** | Run your own with `registry:2` image |
+| Registry                           | Description                              |
+| ---------------------------------- | ---------------------------------------- |
+| **Docker Hub**                     | Default public registry (hub.docker.com) |
+| **Azure Container Registry (ACR)** | Private registry in Azure                |
+| **Amazon ECR**                     | AWS private registry                     |
+| **GitHub Container Registry**      | GitHub's registry (ghcr.io)              |
+| **Self-hosted**                    | Run your own with `registry:2` image     |
 
 ```bash
 # Docker Hub
@@ -318,6 +328,7 @@ docker push myregistry.azurecr.io/myapi:1.0
 ## 9.9 Docker Engine
 
 ### Docker Engine Components
+
 ```
                     ┌─────────────────────────────┐
 Your terminal       │         Docker Engine         │
@@ -338,27 +349,28 @@ docker commands ──► │                               │
                     └───────────────────────────────┘
 ```
 
-| Component | Role |
-|---|---|
-| **Docker CLI** | Command-line tool you type commands into |
-| **REST API** | Interface between CLI and daemon |
+| Component                   | Role                                                         |
+| --------------------------- | ------------------------------------------------------------ |
+| **Docker CLI**              | Command-line tool you type commands into                     |
+| **REST API**                | Interface between CLI and daemon                             |
 | **Docker Daemon (dockerd)** | Background service that manages containers, images, networks |
-| **containerd** | Low-level container runtime (called by daemon) |
+| **containerd**              | Low-level container runtime (called by daemon)               |
 
 ---
 
 ## 9.10 Docker Storage
 
 ### Storage Drivers
+
 > Docker uses a storage driver to manage the container's read-write layer. The most common is `overlay2`.
 
 ### Data Persistence Options
 
-| Type | Description | Use Case |
-|---|---|---|
-| **Volumes** | Managed by Docker in `/var/lib/docker/volumes` | Databases, persistent data |
-| **Bind Mounts** | Mount a specific host folder into container | Dev — share source code |
-| **tmpfs Mounts** | Stored in host memory (RAM) only | Temp/sensitive data |
+| Type             | Description                                    | Use Case                   |
+| ---------------- | ---------------------------------------------- | -------------------------- |
+| **Volumes**      | Managed by Docker in `/var/lib/docker/volumes` | Databases, persistent data |
+| **Bind Mounts**  | Mount a specific host folder into container    | Dev — share source code    |
+| **tmpfs Mounts** | Stored in host memory (RAM) only               | Temp/sensitive data        |
 
 ```bash
 # VOLUMES
@@ -386,6 +398,7 @@ docker run --tmpfs /app/temp myimage
 ## 9.11 Docker Networking
 
 ### Default Networks
+
 ```bash
 docker network ls     # List all networks
 
@@ -395,12 +408,12 @@ host     host    local    ← Container shares host network
 none     null    local    ← No networking
 ```
 
-| Network | Description |
-|---|---|
-| **bridge** | Default. Containers on same bridge can talk to each other. Need `-p` to expose to host. |
-| **host** | Container uses the host's network directly. No port mapping needed. Linux only. |
-| **none** | No network access at all. Maximum isolation. |
-| **overlay** | Multi-host networking (for Docker Swarm / Kubernetes) |
+| Network     | Description                                                                             |
+| ----------- | --------------------------------------------------------------------------------------- |
+| **bridge**  | Default. Containers on same bridge can talk to each other. Need `-p` to expose to host. |
+| **host**    | Container uses the host's network directly. No port mapping needed. Linux only.         |
+| **none**    | No network access at all. Maximum isolation.                                            |
+| **overlay** | Multi-host networking (for Docker Swarm / Kubernetes)                                   |
 
 ```bash
 # Create custom network
@@ -425,9 +438,11 @@ docker network rm my-network
 ## 9.12 Container Orchestration
 
 ### What is Container Orchestration?
+
 > **Container Orchestration** automates the deployment, scaling, management, and networking of containers across multiple hosts.
 
 **Why is it needed?**
+
 ```
 One container on one machine = Docker is enough ✅
 10 containers across 5 servers = Need orchestration ✅
@@ -435,6 +450,7 @@ One container on one machine = Docker is enough ✅
 ```
 
 ### Benefits of Container Orchestration
+
 - **Auto-scaling** — spin up more containers when traffic increases
 - **Self-healing** — restart failed containers automatically
 - **Load balancing** — distribute traffic across container instances
@@ -444,26 +460,26 @@ One container on one machine = Docker is enough ✅
 
 ### Docker vs Kubernetes
 
-| Feature | Docker Swarm | Kubernetes (K8s) |
-|---|---|---|
-| **Complexity** | Simple | Complex but powerful |
-| **Scaling** | Basic | Advanced (HPA, VPA) |
-| **Ecosystem** | Small | Massive (CNCF) |
-| **Learning curve** | Low | High |
-| **Production use** | Small-medium | Enterprise standard |
-| **Cloud support** | Limited | All major clouds (AKS, EKS, GKE) |
+| Feature            | Docker Swarm | Kubernetes (K8s)                 |
+| ------------------ | ------------ | -------------------------------- |
+| **Complexity**     | Simple       | Complex but powerful             |
+| **Scaling**        | Basic        | Advanced (HPA, VPA)              |
+| **Ecosystem**      | Small        | Massive (CNCF)                   |
+| **Learning curve** | Low          | High                             |
+| **Production use** | Small-medium | Enterprise standard              |
+| **Cloud support**  | Limited      | All major clouds (AKS, EKS, GKE) |
 
 ### Kubernetes Key Concepts
 
-| Term | What it is |
-|---|---|
-| **Pod** | Smallest unit — one or more containers running together |
-| **Deployment** | Manages replicas of pods (ensures N copies running) |
-| **Service** | Network endpoint to access pods (stable IP/DNS name) |
-| **Namespace** | Logical grouping of resources |
-| **Node** | A server (VM or physical) that runs pods |
-| **Cluster** | A set of nodes managed by Kubernetes |
-| **kubectl** | CLI tool to manage Kubernetes |
+| Term           | What it is                                              |
+| -------------- | ------------------------------------------------------- |
+| **Pod**        | Smallest unit — one or more containers running together |
+| **Deployment** | Manages replicas of pods (ensures N copies running)     |
+| **Service**    | Network endpoint to access pods (stable IP/DNS name)    |
+| **Namespace**  | Logical grouping of resources                           |
+| **Node**       | A server (VM or physical) that runs pods                |
+| **Cluster**    | A set of nodes managed by Kubernetes                    |
+| **kubectl**    | CLI tool to manage Kubernetes                           |
 
 ```yaml
 # deployment.yml — Deploy 3 replicas of the API
@@ -472,7 +488,7 @@ kind: Deployment
 metadata:
   name: employee-api
 spec:
-  replicas: 3              # Run 3 instances
+  replicas: 3 # Run 3 instances
   selector:
     matchLabels:
       app: employee-api
@@ -482,13 +498,13 @@ spec:
         app: employee-api
     spec:
       containers:
-      - name: employee-api
-        image: myregistry.azurecr.io/employee-api:latest
-        ports:
-        - containerPort: 80
-        env:
-        - name: ASPNETCORE_ENVIRONMENT
-          value: "Production"
+        - name: employee-api
+          image: myregistry.azurecr.io/employee-api:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
 ---
 apiVersion: v1
 kind: Service
@@ -498,9 +514,9 @@ spec:
   selector:
     app: employee-api
   ports:
-  - port: 80
-    targetPort: 80
-  type: LoadBalancer       # Expose to internet
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer # Expose to internet
 ```
 
 ```bash
@@ -519,22 +535,22 @@ kubectl delete -f deployment.yml        # Delete resources
 
 ## 🎯 Interview Questions for Module 9
 
-| # | Question |
-|---|---|
-| 1 | What is Docker? What problem does it solve? |
-| 2 | What is the difference between a Docker Image and a Container? |
-| 3 | What is the difference between Docker and a Virtual Machine? |
-| 4 | What is a Dockerfile? Explain multi-stage builds. |
-| 5 | What is Docker Compose? When would you use it? |
-| 6 | What are the three types of Docker storage? When do you use Volumes vs Bind Mounts? |
-| 7 | What is the difference between bridge, host, and none networks in Docker? |
-| 8 | What is a Docker Registry? What is Docker Hub? |
-| 9 | What is container orchestration? Why is it needed? |
-| 10 | What is Kubernetes? What is the difference between a Pod, Deployment, and Service? |
-| 11 | What is Docker Engine made of? Explain the CLI, REST API, and Daemon. |
-| 12 | What is the purpose of `.dockerignore`? |
-| 13 | What does `-d` mean in `docker run -d`? What about `-p`? |
+| #   | Question                                                                            |
+| --- | ----------------------------------------------------------------------------------- |
+| 1   | What is Docker? What problem does it solve?                                         |
+| 2   | What is the difference between a Docker Image and a Container?                      |
+| 3   | What is the difference between Docker and a Virtual Machine?                        |
+| 4   | What is a Dockerfile? Explain multi-stage builds.                                   |
+| 5   | What is Docker Compose? When would you use it?                                      |
+| 6   | What are the three types of Docker storage? When do you use Volumes vs Bind Mounts? |
+| 7   | What is the difference between bridge, host, and none networks in Docker?           |
+| 8   | What is a Docker Registry? What is Docker Hub?                                      |
+| 9   | What is container orchestration? Why is it needed?                                  |
+| 10  | What is Kubernetes? What is the difference between a Pod, Deployment, and Service?  |
+| 11  | What is Docker Engine made of? Explain the CLI, REST API, and Daemon.               |
+| 12  | What is the purpose of `.dockerignore`?                                             |
+| 13  | What does `-d` mean in `docker run -d`? What about `-p`?                            |
 
 ---
 
-*[← Module 8](./Module8_Debugging.md) | [Back to README](./README.md) | [Next Module →](./Module10_Azure_DevOps.md)*
+_[← Module 8](./Module8_Debugging.md) | [Back to README](./README.md) | [Next Module →](./Module10_Azure_DevOps.md)_

@@ -8,27 +8,27 @@
 
 > A **Web API** is an application that exposes functionality over HTTP so other apps (mobile, web, other services) can consume it.
 
-| Term | Meaning |
-|---|---|
-| **API** | Application Programming Interface — a contract for how systems talk |
-| **Web API** | API that communicates over HTTP/HTTPS |
-| **REST API** | Web API following REST architectural principles |
-| **Endpoint** | A URL that the API exposes (e.g., `GET /api/employees`) |
+| Term         | Meaning                                                             |
+| ------------ | ------------------------------------------------------------------- |
+| **API**      | Application Programming Interface — a contract for how systems talk |
+| **Web API**  | API that communicates over HTTP/HTTPS                               |
+| **REST API** | Web API following REST architectural principles                     |
+| **Endpoint** | A URL that the API exposes (e.g., `GET /api/employees`)             |
 
 ---
 
 ## 6.2 REST vs SOAP
 
-| Feature | REST | SOAP |
-|---|---|---|
-| **Full form** | Representational State Transfer | Simple Object Access Protocol |
-| **Format** | JSON (mostly), XML | XML only |
-| **Protocol** | HTTP | HTTP, SMTP, TCP |
-| **Speed** | Faster (lightweight) | Slower (heavy XML) |
-| **Standards** | Flexible | Strict (WSDL, WS-Security) |
-| **Stateless?** | ✅ Yes | ❌ Can be stateful |
-| **Use case** | Public APIs, mobile apps | Enterprise, banking, legacy systems |
-| **Error handling** | HTTP status codes | SOAP Fault element |
+| Feature            | REST                            | SOAP                                |
+| ------------------ | ------------------------------- | ----------------------------------- |
+| **Full form**      | Representational State Transfer | Simple Object Access Protocol       |
+| **Format**         | JSON (mostly), XML              | XML only                            |
+| **Protocol**       | HTTP                            | HTTP, SMTP, TCP                     |
+| **Speed**          | Faster (lightweight)            | Slower (heavy XML)                  |
+| **Standards**      | Flexible                        | Strict (WSDL, WS-Security)          |
+| **Stateless?**     | ✅ Yes                          | ❌ Can be stateful                  |
+| **Use case**       | Public APIs, mobile apps        | Enterprise, banking, legacy systems |
+| **Error handling** | HTTP status codes               | SOAP Fault element                  |
 
 **Interview Answer:** "REST is lightweight, uses JSON, and works over HTTP with standard verbs (GET, POST, PUT, DELETE). SOAP is stricter, uses XML only, and has built-in security standards. REST is preferred for modern APIs; SOAP is still used in enterprise/banking systems."
 
@@ -36,14 +36,14 @@
 
 ## 6.3 REST Principles (Constraints)
 
-| Principle | What it means |
-|---|---|
-| **Stateless** | Each request is self-contained — server stores no client state |
-| **Client-Server** | Client and server are separate — client handles UI, server handles data |
-| **Cacheable** | Responses can be cached to improve performance |
-| **Uniform Interface** | Consistent URLs, HTTP verbs, and response formats |
-| **Layered System** | Client doesn't know if it's talking directly to the server |
-| **Code on Demand** | Server can send executable code (optional) |
+| Principle             | What it means                                                           |
+| --------------------- | ----------------------------------------------------------------------- |
+| **Stateless**         | Each request is self-contained — server stores no client state          |
+| **Client-Server**     | Client and server are separate — client handles UI, server handles data |
+| **Cacheable**         | Responses can be cached to improve performance                          |
+| **Uniform Interface** | Consistent URLs, HTTP verbs, and response formats                       |
+| **Layered System**    | Client doesn't know if it's talking directly to the server              |
+| **Code on Demand**    | Server can send executable code (optional)                              |
 
 ---
 
@@ -57,6 +57,7 @@ dotnet run
 ```
 
 ### Project Structure
+
 ```
 MyApi/
 ├── Controllers/          ← API controllers go here
@@ -71,6 +72,7 @@ MyApi/
 ```
 
 ### Program.cs (Minimal hosting model)
+
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
@@ -103,6 +105,7 @@ app.Run();
 ## 6.5 Creating Controllers and Actions
 
 ### Basic API Controller
+
 ```csharp
 [ApiController]                    // Enables model binding, automatic 400 responses
 [Route("api/[controller]")]        // Route = api/employees
@@ -170,16 +173,17 @@ public class EmployeesController : ControllerBase  // ControllerBase = no View s
 ```
 
 ### HTTP Status Codes Cheat Sheet
-| Status | Method | Meaning |
-|---|---|---|
-| `200 OK` | GET | Success, returns data |
-| `201 Created` | POST | Resource created |
-| `204 No Content` | PUT/DELETE | Success, no body |
-| `400 Bad Request` | Any | Invalid input |
-| `401 Unauthorized` | Any | Not authenticated |
-| `403 Forbidden` | Any | Authenticated but not allowed |
-| `404 Not Found` | GET/PUT/DELETE | Resource doesn't exist |
-| `500 Internal Server Error` | Any | Server crash |
+
+| Status                      | Method         | Meaning                       |
+| --------------------------- | -------------- | ----------------------------- |
+| `200 OK`                    | GET            | Success, returns data         |
+| `201 Created`               | POST           | Resource created              |
+| `204 No Content`            | PUT/DELETE     | Success, no body              |
+| `400 Bad Request`           | Any            | Invalid input                 |
+| `401 Unauthorized`          | Any            | Not authenticated             |
+| `403 Forbidden`             | Any            | Authenticated but not allowed |
+| `404 Not Found`             | GET/PUT/DELETE | Resource doesn't exist        |
+| `500 Internal Server Error` | Any            | Server crash                  |
 
 ---
 
@@ -513,6 +517,7 @@ public IActionResult PublicEndpoint() { ... }
 ```
 
 ### How JWT Works (Flow)
+
 ```
 1. Client → POST /api/auth/login  { username, password }
 2. Server validates → Returns JWT token (string)
@@ -522,6 +527,7 @@ public IActionResult PublicEndpoint() { ... }
 ```
 
 **JWT Structure:** `header.payload.signature`
+
 ```
 eyJhbGciOiJIUzI1NiJ9  ← header (base64: algorithm)
 .eyJzdWIiOiJhZG1pbiJ9 ← payload (base64: claims like name, role, expiry)
@@ -533,6 +539,7 @@ eyJhbGciOiJIUzI1NiJ9  ← header (base64: algorithm)
 ## 6.11 Securing APIs with API Keys and OAuth
 
 ### API Key Authentication
+
 ```csharp
 // Custom middleware to validate API key
 public class ApiKeyMiddleware
@@ -567,6 +574,7 @@ public class ApiKeyMiddleware
 ```
 
 ### OAuth 2.0 Overview
+
 ```
 OAuth 2.0 is an authorization framework — it lets users grant third-party apps
 access to their data WITHOUT sharing their password.
@@ -657,9 +665,11 @@ public async Task<ActionResult<EmployeeDto>> GetById(int id) { ... }
 ## 6.13 Consuming and Creating SOAP Services
 
 ### What is WCF?
+
 > **WCF (Windows Communication Foundation)** is a Microsoft framework for building SOAP/XML web services. In .NET Core/.NET 8, you use `CoreWCF` for creating SOAP services and `System.ServiceModel` for consuming them.
 
 ### Consuming an Existing SOAP Service
+
 ```bash
 # Add reference to WSDL (generates proxy classes)
 dotnet add package System.ServiceModel.Http
@@ -681,6 +691,7 @@ await client.CloseAsync();
 ```
 
 ### Creating a SOAP Service with CoreWCF
+
 ```bash
 dotnet add package CoreWCF.Http
 ```
@@ -747,19 +758,20 @@ app.UseServiceModel(serviceBuilder =>
 ```
 
 ### Postman Test Scripts (JavaScript)
+
 ```javascript
 // Tests tab — run after each request
 pm.test("Status is 200", () => pm.response.to.have.status(200));
 pm.test("Response is JSON", () => pm.response.to.be.json);
 pm.test("Has employee name", () => {
-    const json = pm.response.json();
-    pm.expect(json.name).to.not.be.empty;
+  const json = pm.response.json();
+  pm.expect(json.name).to.not.be.empty;
 });
 
 // Save token from login response to environment
 pm.test("Save auth token", () => {
-    const json = pm.response.json();
-    pm.environment.set("token", json.token);
+  const json = pm.response.json();
+  pm.environment.set("token", json.token);
 });
 ```
 
@@ -767,23 +779,23 @@ pm.test("Save auth token", () => {
 
 ## 🎯 Interview Questions for Module 6
 
-| # | Question |
-|---|---|
-| 1 | What is a REST API? What are the REST constraints? |
-| 2 | REST vs SOAP — when would you use each? |
-| 3 | What is the difference between `ControllerBase` and `Controller`? |
-| 4 | What HTTP status codes do you return for POST, PUT, DELETE? |
-| 5 | What is the difference between `[FromBody]`, `[FromQuery]`, `[FromRoute]`? |
-| 6 | How do you handle exceptions globally in ASP.NET Core Web API? |
-| 7 | What is Serilog? How is it different from built-in logging? |
-| 8 | How does JWT authentication work in ASP.NET Core? |
-| 9 | What is the difference between Authentication and Authorization? |
-| 10 | What is Swagger/OpenAPI? How do you enable it? |
-| 11 | How do you add JWT support to the Swagger UI? |
-| 12 | What is an API Key? How do you validate it? |
-| 13 | What is OAuth 2.0? What are the grant types? |
-| 14 | What is WCF? How do you consume a SOAP service in .NET 8? |
+| #   | Question                                                                   |
+| --- | -------------------------------------------------------------------------- |
+| 1   | What is a REST API? What are the REST constraints?                         |
+| 2   | REST vs SOAP — when would you use each?                                    |
+| 3   | What is the difference between `ControllerBase` and `Controller`?          |
+| 4   | What HTTP status codes do you return for POST, PUT, DELETE?                |
+| 5   | What is the difference between `[FromBody]`, `[FromQuery]`, `[FromRoute]`? |
+| 6   | How do you handle exceptions globally in ASP.NET Core Web API?             |
+| 7   | What is Serilog? How is it different from built-in logging?                |
+| 8   | How does JWT authentication work in ASP.NET Core?                          |
+| 9   | What is the difference between Authentication and Authorization?           |
+| 10  | What is Swagger/OpenAPI? How do you enable it?                             |
+| 11  | How do you add JWT support to the Swagger UI?                              |
+| 12  | What is an API Key? How do you validate it?                                |
+| 13  | What is OAuth 2.0? What are the grant types?                               |
+| 14  | What is WCF? How do you consume a SOAP service in .NET 8?                  |
 
 ---
 
-*[← Back to README](./README.md) | [Next Module →](./Module7_Microservices.md)*
+_[← Back to README](./README.md) | [Next Module →](./Module7_Microservices.md)_

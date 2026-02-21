@@ -10,17 +10,17 @@
 
 ### Microservices vs Monolithic Architecture
 
-| Feature | Monolithic | Microservices |
-|---|---|---|
-| **Structure** | One large application | Many small services |
-| **Deployment** | Deploy entire app for any change | Deploy only the changed service |
-| **Scaling** | Scale entire app | Scale only the bottleneck service |
-| **Tech stack** | Single technology | Each service can use different tech |
-| **Development** | One team works on everything | Small teams own individual services |
-| **Failure** | One bug can crash everything | One service fails, others keep running |
-| **Complexity** | Simple to start | Complex (networking, data, ops) |
-| **Communication** | In-process method calls | HTTP, gRPC, messaging |
-| **Data** | Shared database | Each service has its own database |
+| Feature           | Monolithic                       | Microservices                          |
+| ----------------- | -------------------------------- | -------------------------------------- |
+| **Structure**     | One large application            | Many small services                    |
+| **Deployment**    | Deploy entire app for any change | Deploy only the changed service        |
+| **Scaling**       | Scale entire app                 | Scale only the bottleneck service      |
+| **Tech stack**    | Single technology                | Each service can use different tech    |
+| **Development**   | One team works on everything     | Small teams own individual services    |
+| **Failure**       | One bug can crash everything     | One service fails, others keep running |
+| **Complexity**    | Simple to start                  | Complex (networking, data, ops)        |
+| **Communication** | In-process method calls          | HTTP, gRPC, messaging                  |
+| **Data**          | Shared database                  | Each service has its own database      |
 
 **Interview Answer:** "Microservices splits a large application into small, independently deployable services, each owning its own data and business logic. It gives better scalability, resilience, and team autonomy, but adds complexity in networking, distributed data, and operations."
 
@@ -29,6 +29,7 @@
 ## 7.2 Advantages and Challenges
 
 ### ✅ Advantages
+
 - **Independent deployment** — update one service without touching others
 - **Scalability** — scale only the high-traffic service (e.g., scale Order service 10x, keep User service at 1x)
 - **Fault isolation** — one service crash doesn't take down the whole app
@@ -37,6 +38,7 @@
 - **Faster development** — smaller codebase = easier to understand and change
 
 ### ❌ Challenges
+
 - **Network latency** — service calls go over the network (slow vs in-process calls)
 - **Distributed transactions** — a transaction spanning 2 services is hard to keep consistent
 - **Service discovery** — how does Service A find Service B's URL?
@@ -73,6 +75,7 @@ Solution/
 ## 7.4 Inter-Service Communication
 
 ### Option 1: HTTP/REST (Synchronous)
+
 > Service A calls Service B directly over HTTP. Simple but tightly coupled.
 
 ```csharp
@@ -112,6 +115,7 @@ public class EmployeeService
 ```
 
 ### Option 2: gRPC (Synchronous, High Performance)
+
 > **gRPC** uses binary Protocol Buffers instead of JSON — much faster than REST, ideal for internal service-to-service communication.
 
 ```bash
@@ -154,6 +158,7 @@ var reply = await client.GetEmployeeAsync(new GetEmployeeRequest { Id = 1 });
 ```
 
 ### Option 3: Message Broker (Asynchronous)
+
 > Services communicate via messages on a **queue/topic**. Producer sends a message; consumer processes it later. Decouples services completely.
 
 ```csharp
@@ -186,12 +191,12 @@ public class EmployeeCreatedHandler
 
 ### Communication Patterns Comparison
 
-| Pattern | Type | Use When |
-|---|---|---|
-| **HTTP/REST** | Synchronous | Need immediate response; simple calls |
-| **gRPC** | Synchronous | High performance, internal services |
-| **Message Broker** | Asynchronous | No immediate response needed; fire-and-forget |
-| **Event Streaming** | Asynchronous | Audit logs, real-time data pipelines |
+| Pattern             | Type         | Use When                                      |
+| ------------------- | ------------ | --------------------------------------------- |
+| **HTTP/REST**       | Synchronous  | Need immediate response; simple calls         |
+| **gRPC**            | Synchronous  | High performance, internal services           |
+| **Message Broker**  | Asynchronous | No immediate response needed; fire-and-forget |
+| **Event Streaming** | Asynchronous | Audit logs, real-time data pipelines          |
 
 ---
 
@@ -205,12 +210,14 @@ With Discovery:     Service A asks registry "where is EmployeeService?" → gets
 ```
 
 ### Tools
+
 - **Consul** — standalone service registry
 - **Kubernetes DNS** — K8s auto-registers services (e.g., `http://employee-service`)
 - **Azure API Management** — managed discovery + gateway
 - **Eureka** — Netflix OSS (Java world, also available for .NET)
 
 ### API Gateway Pattern
+
 > A single entry point that routes requests to the correct microservice. Clients talk to ONE endpoint.
 
 ```
@@ -241,6 +248,7 @@ dotnet add package Ocelot
 ## 7.6 Data Management in Microservices
 
 ### Database per Service Pattern ✅ (Recommended)
+
 > Each microservice has its **own private database**. No other service can access it directly — they must go through the service's API.
 
 ```
@@ -253,9 +261,11 @@ OrderService        → OrderDB        (SQL Server)
 **Why?** Loose coupling — EmployeeService can change its DB schema without breaking other services.
 
 ### Shared Database Pattern ❌ (Anti-pattern)
+
 > All services share one database — creates tight coupling, one service's schema change can break others.
 
 ### Data Consistency Challenges
+
 ```
 Problem: Place an Order requires:
   1. Create order in OrderService DB ✓
@@ -264,6 +274,7 @@ Problem: Place an Order requires:
 ```
 
 ### SAGA Pattern — Distributed Transactions
+
 > A **SAGA** is a sequence of local transactions with compensating transactions for rollback.
 
 ```
@@ -349,11 +360,12 @@ app.MapHealthChecks("/health", new HealthCheckOptions
 ```
 
 ### Health Check Types
-| Type | URL | Purpose |
-|---|---|---|
-| **Liveness** | `/health/live` | Is the service running? (restart if fails) |
-| **Readiness** | `/health/ready` | Is the service ready for traffic? |
-| **Startup** | `/health/startup` | Did the service finish starting? |
+
+| Type          | URL               | Purpose                                    |
+| ------------- | ----------------- | ------------------------------------------ |
+| **Liveness**  | `/health/live`    | Is the service running? (restart if fails) |
+| **Readiness** | `/health/ready`   | Is the service ready for traffic?          |
+| **Startup**   | `/health/startup` | Did the service finish starting?           |
 
 ---
 
@@ -379,13 +391,14 @@ public class CorrelationIdMiddleware
 ```
 
 ### Distributed Tracing Tools
-| Tool | Purpose |
-|---|---|
-| **Serilog** | Structured logging |
-| **Seq** | Log aggregation and search UI |
-| **Jaeger / Zipkin** | Distributed tracing (trace request across services) |
-| **OpenTelemetry** | Standard for collecting traces, metrics, logs |
-| **Azure Monitor / App Insights** | Azure-native monitoring |
+
+| Tool                             | Purpose                                             |
+| -------------------------------- | --------------------------------------------------- |
+| **Serilog**                      | Structured logging                                  |
+| **Seq**                          | Log aggregation and search UI                       |
+| **Jaeger / Zipkin**              | Distributed tracing (trace request across services) |
+| **OpenTelemetry**                | Standard for collecting traces, metrics, logs       |
+| **Azure Monitor / App Insights** | Azure-native monitoring                             |
 
 ---
 
@@ -399,37 +412,37 @@ on:
   push:
     branches: [main]
     paths:
-      - 'Services/EmployeeService/**'  # Only trigger when this service changes
+      - "Services/EmployeeService/**" # Only trigger when this service changes
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Setup .NET 8
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '8.0.x'
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "8.0.x"
 
-    - name: Build
-      run: dotnet build Services/EmployeeService --configuration Release
+      - name: Build
+        run: dotnet build Services/EmployeeService --configuration Release
 
-    - name: Test
-      run: dotnet test Services/EmployeeService.Tests
+      - name: Test
+        run: dotnet test Services/EmployeeService.Tests
 
-    - name: Build Docker image
-      run: docker build -t employee-service:${{ github.sha }} ./Services/EmployeeService
+      - name: Build Docker image
+        run: docker build -t employee-service:${{ github.sha }} ./Services/EmployeeService
 
-    - name: Push to Azure Container Registry
-      run: |
-        docker tag employee-service:${{ github.sha }} myregistry.azurecr.io/employee-service:latest
-        docker push myregistry.azurecr.io/employee-service:latest
+      - name: Push to Azure Container Registry
+        run: |
+          docker tag employee-service:${{ github.sha }} myregistry.azurecr.io/employee-service:latest
+          docker push myregistry.azurecr.io/employee-service:latest
 
-    - name: Deploy to AKS
-      run: kubectl set image deployment/employee-service employee-service=myregistry.azurecr.io/employee-service:latest
+      - name: Deploy to AKS
+        run: kubectl set image deployment/employee-service employee-service=myregistry.azurecr.io/employee-service:latest
 ```
 
 ---
@@ -437,12 +450,14 @@ jobs:
 ## 7.12 Deployment Strategies
 
 ### Rolling Update (Default in Kubernetes)
+
 ```
 Old pods replaced one at a time → Zero downtime
 v1 v1 v1 v1  →  v2 v1 v1 v1  →  v2 v2 v1 v1  →  v2 v2 v2 v2
 ```
 
 ### Blue-Green Deployment
+
 ```
 Blue  = current production (v1) — live traffic
 Green = new version (v2)      — no traffic yet
@@ -454,17 +469,18 @@ Green = new version (v2)      — no traffic yet
 ```
 
 ### Canary Deployment
+
 ```
 Route 5% of traffic to new version, 95% to old version.
 Monitor for errors → if OK, gradually increase to 100%
 If problems → instantly switch back to 0% on new version
 ```
 
-| Strategy | Downtime | Rollback | Cost |
-|---|---|---|---|
-| Rolling Update | Zero | Slow (re-roll) | Low |
-| Blue-Green | Zero | Instant | 2x resources |
-| Canary | Zero | Instant | Low |
+| Strategy       | Downtime | Rollback       | Cost         |
+| -------------- | -------- | -------------- | ------------ |
+| Rolling Update | Zero     | Slow (re-roll) | Low          |
+| Blue-Green     | Zero     | Instant        | 2x resources |
+| Canary         | Zero     | Instant        | Low          |
 
 ---
 
@@ -494,7 +510,7 @@ ENTRYPOINT ["dotnet", "EmployeeService.dll"]
 
 ```yaml
 # docker-compose.yml — Run all services together
-version: '3.8'
+version: "3.8"
 services:
   employee-service:
     build: ./Services/EmployeeService
@@ -520,22 +536,22 @@ services:
 
 ## 🎯 Interview Questions for Module 7
 
-| # | Question |
-|---|---|
-| 1 | What is microservices architecture? How is it different from monolithic? |
-| 2 | What are the advantages of microservices? What are the challenges? |
-| 3 | What is synchronous vs asynchronous communication in microservices? |
-| 4 | What is gRPC? When would you use it over REST? |
-| 5 | What is an API Gateway? Why is it needed in microservices? |
-| 6 | What is the Database per Service pattern? Why is shared DB an anti-pattern? |
-| 7 | What is the SAGA pattern? What problem does it solve? |
-| 8 | How do you handle JWT authentication across multiple microservices? |
-| 9 | What is a health check? What is the difference between liveness and readiness? |
-| 10 | What is a Correlation ID? Why is it important in microservices? |
-| 11 | What is Blue-Green deployment? What is Canary deployment? |
-| 12 | What is service discovery? Name some tools. |
-| 13 | How does CI/CD work with GitHub Actions for a microservices project? |
+| #   | Question                                                                       |
+| --- | ------------------------------------------------------------------------------ |
+| 1   | What is microservices architecture? How is it different from monolithic?       |
+| 2   | What are the advantages of microservices? What are the challenges?             |
+| 3   | What is synchronous vs asynchronous communication in microservices?            |
+| 4   | What is gRPC? When would you use it over REST?                                 |
+| 5   | What is an API Gateway? Why is it needed in microservices?                     |
+| 6   | What is the Database per Service pattern? Why is shared DB an anti-pattern?    |
+| 7   | What is the SAGA pattern? What problem does it solve?                          |
+| 8   | How do you handle JWT authentication across multiple microservices?            |
+| 9   | What is a health check? What is the difference between liveness and readiness? |
+| 10  | What is a Correlation ID? Why is it important in microservices?                |
+| 11  | What is Blue-Green deployment? What is Canary deployment?                      |
+| 12  | What is service discovery? Name some tools.                                    |
+| 13  | How does CI/CD work with GitHub Actions for a microservices project?           |
 
 ---
 
-*[← Module 6](./Module6_WebAPI.md) | [Back to README](./README.md) | [Next Module →](./Module8_Debugging.md)*
+_[← Module 6](./Module6_WebAPI.md) | [Back to README](./README.md) | [Next Module →](./Module8_Debugging.md)_
