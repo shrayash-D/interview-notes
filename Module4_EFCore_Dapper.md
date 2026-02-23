@@ -28,14 +28,14 @@
 
 These are the two main **workflows** (approaches) for setting up EF Core in a project.
 
-| Aspect | Code-First | Database-First |
-|---|---|---|
-| **Definition** | You write C# classes first; EF generates the database schema | Database already exists; EF generates C# classes from it |
-| **Who controls schema?** | Developer (via C# code + migrations) | DBA / existing DB |
-| **How DB is created** | `dotnet ef migrations add` → `dotnet ef database update` | `dotnet ef dbcontext scaffold` |
-| **Best for** | New projects, greenfield development | Legacy DBs, large existing schemas |
-| **Migration support** | ✅ Full migrations history | ❌ No migrations (DB is the source of truth) |
-| **Common in** | Modern .NET projects | Enterprise projects with existing DBs |
+| Aspect                   | Code-First                                                   | Database-First                                           |
+| ------------------------ | ------------------------------------------------------------ | -------------------------------------------------------- |
+| **Definition**           | You write C# classes first; EF generates the database schema | Database already exists; EF generates C# classes from it |
+| **Who controls schema?** | Developer (via C# code + migrations)                         | DBA / existing DB                                        |
+| **How DB is created**    | `dotnet ef migrations add` → `dotnet ef database update`     | `dotnet ef dbcontext scaffold`                           |
+| **Best for**             | New projects, greenfield development                         | Legacy DBs, large existing schemas                       |
+| **Migration support**    | ✅ Full migrations history                                   | ❌ No migrations (DB is the source of truth)             |
+| **Common in**            | Modern .NET projects                                         | Enterprise projects with existing DBs                    |
 
 ### Code-First Workflow
 
@@ -82,6 +82,7 @@ dotnet ef dbcontext scaffold "Server=.;Database=ShopDB;Trusted_Connection=True;"
 `DbContext` is the **central class** in EF Core. It is the bridge between your C# application and the database.
 
 **What it does:**
+
 - Manages the database connection
 - Tracks changes to entities (Change Tracker)
 - Executes queries and saves changes
@@ -109,14 +110,14 @@ public class AppDbContext : DbContext
 
 `DbSet<T>` represents a **table** in the database. It is used to query and save instances of `T`.
 
-| Operation | Method |
-|---|---|
-| Add single record | `_context.Employees.Add(emp)` |
-| Add async | `await _context.Employees.AddAsync(emp)` |
-| Find by PK | `await _context.Employees.FindAsync(id)` |
-| Query (LINQ) | `_context.Employees.Where(...).ToListAsync()` |
-| Remove | `_context.Employees.Remove(emp)` |
-| Commit all changes | `await _context.SaveChangesAsync()` |
+| Operation          | Method                                        |
+| ------------------ | --------------------------------------------- |
+| Add single record  | `_context.Employees.Add(emp)`                 |
+| Add async          | `await _context.Employees.AddAsync(emp)`      |
+| Find by PK         | `await _context.Employees.FindAsync(id)`      |
+| Query (LINQ)       | `_context.Employees.Where(...).ToListAsync()` |
+| Remove             | `_context.Employees.Remove(emp)`              |
+| Commit all changes | `await _context.SaveChangesAsync()`           |
 
 > **Key point:** Changes are only saved to the database when you call `SaveChangesAsync()`. Before that, EF is just tracking them in memory (Change Tracker).
 
@@ -608,6 +609,7 @@ int count = department.Employees.Count;
 > **Data Annotations** are attributes you place directly on your entity class properties to configure the EF Core mapping and also perform model validation (used by ASP.NET Core's model binding).
 
 They live in two namespaces:
+
 - `System.ComponentModel.DataAnnotations` — validation + naming
 - `System.ComponentModel.DataAnnotations.Schema` — schema mapping
 
@@ -669,34 +671,34 @@ public class Employee
 
 ### Annotations Quick Reference Table
 
-| Annotation | Namespace | DB Effect | Validation Effect |
-|---|---|---|---|
-| `[Key]` | DataAnnotations.Schema | Primary key | — |
-| `[Required]` | DataAnnotations | NOT NULL | Field is required |
-| `[MaxLength(n)]` | DataAnnotations | VARCHAR(n) | Max length check |
-| `[MinLength(n)]` | DataAnnotations | None | Min length check |
-| `[StringLength(max)]` | DataAnnotations | VARCHAR(max) | Max length check |
-| `[Column("name")]` | DataAnnotations.Schema | Renames column | — |
-| `[Table("name")]` | DataAnnotations.Schema | Renames table | — |
-| `[NotMapped]` | DataAnnotations.Schema | Not stored in DB | — |
-| `[ForeignKey("nav")]` | DataAnnotations.Schema | FK column | — |
-| `[Range(min, max)]` | DataAnnotations | None | Value range check |
-| `[EmailAddress]` | DataAnnotations | None | Email format |
-| `[Url]` | DataAnnotations | None | URL format |
-| `[Phone]` | DataAnnotations | None | Phone format |
-| `[Timestamp]` | DataAnnotations | rowversion type | — |
-| `[DatabaseGenerated(...)]` | DataAnnotations.Schema | Identity/Computed | — |
-| `[ConcurrencyCheck]` | DataAnnotations | Optimistic lock | — |
+| Annotation                 | Namespace              | DB Effect         | Validation Effect |
+| -------------------------- | ---------------------- | ----------------- | ----------------- |
+| `[Key]`                    | DataAnnotations.Schema | Primary key       | —                 |
+| `[Required]`               | DataAnnotations        | NOT NULL          | Field is required |
+| `[MaxLength(n)]`           | DataAnnotations        | VARCHAR(n)        | Max length check  |
+| `[MinLength(n)]`           | DataAnnotations        | None              | Min length check  |
+| `[StringLength(max)]`      | DataAnnotations        | VARCHAR(max)      | Max length check  |
+| `[Column("name")]`         | DataAnnotations.Schema | Renames column    | —                 |
+| `[Table("name")]`          | DataAnnotations.Schema | Renames table     | —                 |
+| `[NotMapped]`              | DataAnnotations.Schema | Not stored in DB  | —                 |
+| `[ForeignKey("nav")]`      | DataAnnotations.Schema | FK column         | —                 |
+| `[Range(min, max)]`        | DataAnnotations        | None              | Value range check |
+| `[EmailAddress]`           | DataAnnotations        | None              | Email format      |
+| `[Url]`                    | DataAnnotations        | None              | URL format        |
+| `[Phone]`                  | DataAnnotations        | None              | Phone format      |
+| `[Timestamp]`              | DataAnnotations        | rowversion type   | —                 |
+| `[DatabaseGenerated(...)]` | DataAnnotations.Schema | Identity/Computed | —                 |
+| `[ConcurrencyCheck]`       | DataAnnotations        | Optimistic lock   | —                 |
 
 ### Data Annotations vs Fluent API
 
-| Aspect | Data Annotations | Fluent API |
-|---|---|---|
-| Location | On the entity class (attributes) | In `OnModelCreating` in DbContext |
-| Entity cleanliness | ❌ Entity has persistence concerns | ✅ Entity is a clean POCO |
-| Power / flexibility | Limited | Full control |
-| Composite keys | ❌ Not supported | ✅ Supported |
-| Preferred when | Simple projects, quick setup | Production apps, DDD, clean architecture |
+| Aspect              | Data Annotations                   | Fluent API                               |
+| ------------------- | ---------------------------------- | ---------------------------------------- |
+| Location            | On the entity class (attributes)   | In `OnModelCreating` in DbContext        |
+| Entity cleanliness  | ❌ Entity has persistence concerns | ✅ Entity is a clean POCO                |
+| Power / flexibility | Limited                            | Full control                             |
+| Composite keys      | ❌ Not supported                   | ✅ Supported                             |
+| Preferred when      | Simple projects, quick setup       | Production apps, DDD, clean architecture |
 
 **Interview Answer:** _"Data Annotations are attributes placed on entity class properties to configure both the EF Core schema mapping (column name, type, required) and ASP.NET Core validation (Range, EmailAddress, Required). They're quick and convenient but limited — for example, you can't define composite keys with them. For more complex configuration I use Fluent API in OnModelCreating, which keeps entity classes clean."_
 
