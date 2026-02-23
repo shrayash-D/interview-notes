@@ -1,7 +1,7 @@
 # 📘 Interview Preparation Notes — .NET Full Stack Developer
 
 > 🎯 **Goal:** Crack the interview with clear definitions, real examples, and confident answers.
-> 📅 **Last Updated:** February 21, 2026
+> 📅 **Last Updated:** February 23, 2026
 
 ---
 
@@ -20,6 +20,7 @@
 | 9   | [Docker Basics](./Module9_Docker.md)                     | Docker vs VM, Commands, Dockerfile, Docker Compose, Registry, Engine, Storage, Networking, Kubernetes            |
 | 10  | [Cloud & Azure DevOps](./Module10_Azure_DevOps.md)       | Cloud/IaaS/PaaS/SaaS, Azure Compute/Networking/Data/Messaging, AAD, Boards, Repos, Pipelines, Test Plans         |
 | 🌟  | [**Bonus: Extra Topics**](./Bonus_Extra_Topics.md)       | DTO, AutoMapper, Repository Pattern, Unit of Work, JWT Auth, Circular Reference, Locking, Nested Transactions    |
+| 📅  | [**Study Plan — Day 1 & Day 2**](./StudyPlan_Day1_Day2.md) | Theory-focused revision: OOP, SOLID, CLR, DI, async/await, LINQ, EF Core, JWT, Middleware — with revision checklist |
 
 ---
 
