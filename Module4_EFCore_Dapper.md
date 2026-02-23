@@ -20,6 +20,108 @@
 | Approach           | Code-First preferred | Database-First common |
 | Active Development | ✅ Yes               | ❌ Maintenance mode   |
 
+**Interview Answer:** _"EF Core is the modern, cross-platform rewrite of Entity Framework. It supports .NET 6/7/8, is actively developed, and is significantly faster. EF6 only runs on Windows/.NET Framework and is in maintenance mode — no new features."_
+
+---
+
+## 4.2a Code-First vs Database-First
+
+These are the two main **workflows** (approaches) for setting up EF Core in a project.
+
+| Aspect | Code-First | Database-First |
+|---|---|---|
+| **Definition** | You write C# classes first; EF generates the database schema | Database already exists; EF generates C# classes from it |
+| **Who controls schema?** | Developer (via C# code + migrations) | DBA / existing DB |
+| **How DB is created** | `dotnet ef migrations add` → `dotnet ef database update` | `dotnet ef dbcontext scaffold` |
+| **Best for** | New projects, greenfield development | Legacy DBs, large existing schemas |
+| **Migration support** | ✅ Full migrations history | ❌ No migrations (DB is the source of truth) |
+| **Common in** | Modern .NET projects | Enterprise projects with existing DBs |
+
+### Code-First Workflow
+
+```csharp
+// Step 1: Write your entity class
+public class Product
+{
+    public int ProductId { get; set; }
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+}
+
+// Step 2: Add to DbContext
+public class AppDbContext : DbContext
+{
+    public DbSet<Product> Products { get; set; }
+}
+
+// Step 3: Create and apply migration
+// dotnet ef migrations add CreateProductTable
+// dotnet ef database update
+// → EF creates the Products table in the DB automatically
+```
+
+### Database-First Workflow
+
+```bash
+# Scaffold (reverse engineer) C# classes from an existing database
+dotnet ef dbcontext scaffold "Server=.;Database=ShopDB;Trusted_Connection=True;" \
+    Microsoft.EntityFrameworkCore.SqlServer \
+    --output-dir Models \
+    --context ShopDbContext
+# → Generates entity classes and DbContext from existing tables
+```
+
+**Interview Answer:** _"Code-First means I write C# entity classes and EF generates the database using migrations — I have full control over the schema through code. Database-First is the reverse: an existing database is scaffolded into C# classes. I prefer Code-First for new projects because migrations give a versioned history of schema changes."_
+
+---
+
+## 4.2b DbContext and DbSet — In Detail
+
+### DbContext
+
+`DbContext` is the **central class** in EF Core. It is the bridge between your C# application and the database.
+
+**What it does:**
+- Manages the database connection
+- Tracks changes to entities (Change Tracker)
+- Executes queries and saves changes
+- Holds `DbSet<T>` properties for each entity
+
+```csharp
+public class AppDbContext : DbContext
+{
+    // Constructor: receives options (connection string, provider) via DI
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
+    // DbSet = represents a table in the database
+    public DbSet<Employee> Employees { get; set; }
+    public DbSet<Department> Departments { get; set; }
+
+    // Optional: configure entity mappings (Fluent API)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // ... configuration here
+    }
+}
+```
+
+### DbSet\<T\>
+
+`DbSet<T>` represents a **table** in the database. It is used to query and save instances of `T`.
+
+| Operation | Method |
+|---|---|
+| Add single record | `_context.Employees.Add(emp)` |
+| Add async | `await _context.Employees.AddAsync(emp)` |
+| Find by PK | `await _context.Employees.FindAsync(id)` |
+| Query (LINQ) | `_context.Employees.Where(...).ToListAsync()` |
+| Remove | `_context.Employees.Remove(emp)` |
+| Commit all changes | `await _context.SaveChangesAsync()` |
+
+> **Key point:** Changes are only saved to the database when you call `SaveChangesAsync()`. Before that, EF is just tracking them in memory (Change Tracker).
+
+**Interview Answer:** _"DbContext is the main class that coordinates EF Core — it holds the connection, tracks entity changes, and exposes DbSet properties. Each DbSet maps to a table. You query through DbSet using LINQ, and call SaveChangesAsync() to commit all tracked changes as a single unit of work."_
+
 ---
 
 ## 4.3 New Features in EF Core 8
@@ -498,6 +600,105 @@ int count = department.Employees.Count;
 | Need Add/Remove on a loaded collection | `ICollection<T>`   |
 
 **Interview Answer:** _"IQueryable builds the SQL query and runs it in the database — only when you call ToList() or similar. IEnumerable loads everything into memory first and then filters in C#, which is very inefficient for large tables. ICollection is for in-memory collections that are already loaded — it supports Add/Remove/Count and is typically used for navigation properties in EF Core."_
+
+---
+
+## 4.14a Data Annotations in EF Core
+
+> **Data Annotations** are attributes you place directly on your entity class properties to configure the EF Core mapping and also perform model validation (used by ASP.NET Core's model binding).
+
+They live in two namespaces:
+- `System.ComponentModel.DataAnnotations` — validation + naming
+- `System.ComponentModel.DataAnnotations.Schema` — schema mapping
+
+### Full Annotation Reference
+
+```csharp
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+[Table("tbl_Employees", Schema = "hr")]   // Map to specific table/schema
+public class Employee
+{
+    // ── Primary Key ──────────────────────────────────────────────────────────
+    [Key]                                  // Marks as Primary Key
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]  // Auto-increment
+    public int EmployeeId { get; set; }
+
+    // ── Column Configuration ─────────────────────────────────────────────────
+    [Column("EmployeeName")]               // Override column name in DB
+    [Required]                             // NOT NULL in DB + validation
+    [MaxLength(100)]                       // VARCHAR(100) in DB + validation
+    [MinLength(2)]                         // Validation only (no DB constraint)
+    public string Name { get; set; }
+
+    [StringLength(50, MinimumLength = 2)]  // MaxLength + MinLength in one attribute
+    public string Username { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]   // Set exact SQL type
+    [Range(0, 999999.99)]                  // Validation: value must be in range
+    public decimal Salary { get; set; }
+
+    [EmailAddress]                         // Validation: must be valid email format
+    public string Email { get; set; }
+
+    [Phone]                                // Validation: must be valid phone format
+    public string Phone { get; set; }
+
+    [Url]                                  // Validation: must be valid URL
+    public string ProfileUrl { get; set; }
+
+    [DataType(DataType.Date)]              // Hint for display/input formatting only
+    public DateTime DateOfBirth { get; set; }
+
+    [NotMapped]                            // NOT stored in DB (calculated/display only)
+    public string FullDisplayName => $"{Name} ({Email})";
+
+    // ── Foreign Key ──────────────────────────────────────────────────────────
+    [ForeignKey("Department")]             // Explicit FK declaration
+    public int DepartmentId { get; set; }
+    public Department Department { get; set; }
+
+    // ── Concurrency ──────────────────────────────────────────────────────────
+    [Timestamp]                            // RowVersion for optimistic concurrency
+    public byte[] RowVersion { get; set; }
+
+    // ── Composite Key (NOT possible with Data Annotations — use Fluent API) ──
+}
+```
+
+### Annotations Quick Reference Table
+
+| Annotation | Namespace | DB Effect | Validation Effect |
+|---|---|---|---|
+| `[Key]` | DataAnnotations.Schema | Primary key | — |
+| `[Required]` | DataAnnotations | NOT NULL | Field is required |
+| `[MaxLength(n)]` | DataAnnotations | VARCHAR(n) | Max length check |
+| `[MinLength(n)]` | DataAnnotations | None | Min length check |
+| `[StringLength(max)]` | DataAnnotations | VARCHAR(max) | Max length check |
+| `[Column("name")]` | DataAnnotations.Schema | Renames column | — |
+| `[Table("name")]` | DataAnnotations.Schema | Renames table | — |
+| `[NotMapped]` | DataAnnotations.Schema | Not stored in DB | — |
+| `[ForeignKey("nav")]` | DataAnnotations.Schema | FK column | — |
+| `[Range(min, max)]` | DataAnnotations | None | Value range check |
+| `[EmailAddress]` | DataAnnotations | None | Email format |
+| `[Url]` | DataAnnotations | None | URL format |
+| `[Phone]` | DataAnnotations | None | Phone format |
+| `[Timestamp]` | DataAnnotations | rowversion type | — |
+| `[DatabaseGenerated(...)]` | DataAnnotations.Schema | Identity/Computed | — |
+| `[ConcurrencyCheck]` | DataAnnotations | Optimistic lock | — |
+
+### Data Annotations vs Fluent API
+
+| Aspect | Data Annotations | Fluent API |
+|---|---|---|
+| Location | On the entity class (attributes) | In `OnModelCreating` in DbContext |
+| Entity cleanliness | ❌ Entity has persistence concerns | ✅ Entity is a clean POCO |
+| Power / flexibility | Limited | Full control |
+| Composite keys | ❌ Not supported | ✅ Supported |
+| Preferred when | Simple projects, quick setup | Production apps, DDD, clean architecture |
+
+**Interview Answer:** _"Data Annotations are attributes placed on entity class properties to configure both the EF Core schema mapping (column name, type, required) and ASP.NET Core validation (Range, EmailAddress, Required). They're quick and convenient but limited — for example, you can't define composite keys with them. For more complex configuration I use Fluent API in OnModelCreating, which keeps entity classes clean."_
 
 ---
 
