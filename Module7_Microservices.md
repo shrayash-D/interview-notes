@@ -77,10 +77,12 @@ Solution/
 **The fundamental question:** How does Service A talk to Service B?
 
 **Two communication styles:**
+
 - **Synchronous** — Service A sends a request and **waits** for Service B's response before continuing. If Service B is slow or down, Service A is blocked.
 - **Asynchronous** — Service A publishes a message to a **message broker** and continues immediately. Service B reads and processes the message whenever it's ready. No waiting, no blocking.
 
 **When to use which:**
+
 - **Synchronous (HTTP/gRPC)** — When Service A needs the response to continue its own work (e.g., get user details to include in an order)
 - **Asynchronous (Message broker)** — When Service A doesn't need an immediate response (e.g., send a notification email after order placed)
 
@@ -218,6 +220,7 @@ public class EmployeeCreatedHandler
 In a microservices system, services run in containers with dynamic IPs that change on restart, scaling, or redeployment. You can't hardcode `http://192.168.1.5:5001` — that IP might be different tomorrow. Service discovery solves this: each service **registers itself** with a central registry, and other services look up the current address by name.
 
 **Two models:**
+
 - **Client-side discovery** — the calling service queries the registry and picks an address itself (Netflix Ribbon pattern)
 - **Server-side discovery** — the caller sends to a load balancer/gateway, which does the lookup (Kubernetes does this)
 

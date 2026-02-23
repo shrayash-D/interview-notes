@@ -13,6 +13,7 @@ Software has dependencies — specific runtime versions, specific OS libraries, 
 Docker packages your application together with **everything it needs to run** — the runtime, libraries, config — into a single unit called a **container**. This container runs identically on any machine that has Docker installed.
 
 **Key concepts:**
+
 - **Image** — A read-only blueprint/template. Like a class in OOP. Built from a `Dockerfile`. Stored in a registry (Docker Hub, Azure Container Registry).
 - **Container** — A running instance of an image. Like an object instantiated from a class. Isolated process on the host OS.
 - **Dockerfile** — A text file with instructions to build an image (FROM, COPY, RUN, ENTRYPOINT).
@@ -233,6 +234,7 @@ Real applications need multiple services — a web API, a database, a cache, may
 Without Compose, you'd run multiple `docker run` commands manually, passing dozens of environment variables and networking flags, in the right order. One wrong flag and services can't talk to each other. Compose automates and versions all of this.
 
 **Key concepts:**
+
 - **service** — each container (api, sqlserver, redis) is a service
 - **depends_on** — controls startup order (start DB before the API)
 - **volumes** — persist data outside the container (so DB data survives container restarts)

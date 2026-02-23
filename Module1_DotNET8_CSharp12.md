@@ -16,14 +16,14 @@
 
 ### Evolution: .NET Framework → .NET 6 → .NET 8
 
-| Version | Key Point |
-|---|---|
-| **.NET Framework** (2002) | Windows-only, runs on CLR (Common Language Runtime) |
-| **.NET Core** (2016) | Cross-platform rewrite, open-source, faster |
-| **.NET 5** (2020) | Unified .NET Core + .NET Framework into one platform |
-| **.NET 6** (2021) | LTS (Long Term Support), Minimal APIs introduced |
-| **.NET 7** (2022) | Performance improvements, short-term support |
-| **.NET 8** (2023) | **LTS**, best performance yet, Native AOT, improved Blazor |
+| Version                   | Key Point                                                  |
+| ------------------------- | ---------------------------------------------------------- |
+| **.NET Framework** (2002) | Windows-only, runs on CLR (Common Language Runtime)        |
+| **.NET Core** (2016)      | Cross-platform rewrite, open-source, faster                |
+| **.NET 5** (2020)         | Unified .NET Core + .NET Framework into one platform       |
+| **.NET 6** (2021)         | LTS (Long Term Support), Minimal APIs introduced           |
+| **.NET 7** (2022)         | Performance improvements, short-term support               |
+| **.NET 8** (2023)         | **LTS**, best performance yet, Native AOT, improved Blazor |
 
 **Why did Microsoft move from .NET Framework to .NET Core?**
 Because .NET Framework was Windows-only and tightly coupled to IIS. The industry needed cross-platform support (Linux servers, Docker containers). .NET Core was a ground-up rewrite that runs everywhere.
@@ -34,14 +34,14 @@ Because .NET Framework was Windows-only and tightly coupled to IIS. The industry
 
 ### Key Features in .NET 8
 
-| Feature | Simple Explanation |
-|---|---|
-| **Native AOT** | App compiled to machine code at build time → faster startup, smaller size |
-| **Performance Improvements** | Up to 20% faster than .NET 7 in many benchmarks |
-| **Improved Blazor** | Unified full-stack web UI with server + client rendering |
-| **Minimal APIs** | Lighter-weight APIs with less code |
-| **Garbage Collector Improvements** | Better memory management |
-| **Frozen Collections** | `FrozenDictionary`, `FrozenSet` — read-only, optimized for fast lookup |
+| Feature                            | Simple Explanation                                                        |
+| ---------------------------------- | ------------------------------------------------------------------------- |
+| **Native AOT**                     | App compiled to machine code at build time → faster startup, smaller size |
+| **Performance Improvements**       | Up to 20% faster than .NET 7 in many benchmarks                           |
+| **Improved Blazor**                | Unified full-stack web UI with server + client rendering                  |
+| **Minimal APIs**                   | Lighter-weight APIs with less code                                        |
+| **Garbage Collector Improvements** | Better memory management                                                  |
+| **Frozen Collections**             | `FrozenDictionary`, `FrozenSet` — read-only, optimized for fast lookup    |
 
 ---
 
@@ -124,6 +124,7 @@ Console.WriteLine(greet("Alice")); // "Hello, Alice!"
 CLR is the **execution engine** of .NET. It is the layer that actually runs your compiled code. When you build a C# project, the compiler does NOT produce machine code directly — it produces **Intermediate Language (IL)**, also called MSIL or CIL. The CLR then takes that IL and compiles it to native machine code at runtime using **JIT (Just-In-Time) compilation**.
 
 **Compilation flow:**
+
 ```
 Your C# Code (.cs)
     ↓  C# Compiler (csc / Roslyn)
@@ -134,25 +135,27 @@ Native Machine Code (runs on CPU)
 
 **What CLR manages for you:**
 
-| CLR Responsibility | What It Does |
-|---|---|
-| **JIT Compilation** | Converts IL → native machine code at runtime |
+| CLR Responsibility          | What It Does                                                  |
+| --------------------------- | ------------------------------------------------------------- |
+| **JIT Compilation**         | Converts IL → native machine code at runtime                  |
 | **Garbage Collection (GC)** | Automatically finds and frees unused objects from heap memory |
-| **Type Safety** | Prevents illegal casts and memory access errors |
-| **Exception Handling** | Unified exception model across all .NET languages |
-| **Thread Management** | Creates, schedules, and synchronizes threads |
-| **Security** | Code Access Security, sandboxing |
+| **Type Safety**             | Prevents illegal casts and memory access errors               |
+| **Exception Handling**      | Unified exception model across all .NET languages             |
+| **Thread Management**       | Creates, schedules, and synchronizes threads                  |
+| **Security**                | Code Access Security, sandboxing                              |
 
 **What is JIT?**
 JIT (Just-In-Time) compilation means code is compiled to native code the **first time a method is called**. After that, the native version is cached. This is why .NET apps can feel slightly slow on first request and faster afterwards.
 
 **What is Garbage Collection?**
 GC automatically detects objects in heap memory that are no longer referenced and frees that memory. It uses a **generational model**:
+
 - **Gen 0** — Short-lived objects (most objects die here, cheapest to collect)
 - **Gen 1** — Medium-lived objects (survived Gen 0 collection)
 - **Gen 2** — Long-lived objects (singletons, static data, expensive to collect)
 
 **CTS vs CLS:**
+
 - **CTS (Common Type System)** — Defines all types that .NET supports. Ensures a C# `int` and a VB.NET `Integer` are actually the same type at runtime.
 - **CLS (Common Language Specification)** — A subset of CTS that all .NET languages must support so they can interoperate safely.
 
@@ -174,13 +177,13 @@ A synchronous web server has a fixed number of threads. Each blocked thread (wai
 **The state machine:**
 When you mark a method `async`, the compiler transforms it into a **state machine** behind the scenes. Each `await` point becomes a "state" that the machine can pause at and resume from later.
 
-| Rule | Detail |
-|---|---|
-| Return type | `Task` (no return value) or `Task<T>` (returns T) |
-| `async void` | Only for event handlers — errors are swallowed silently, avoid |
-| Never use `.Result` or `.Wait()` | Blocks the thread, causes deadlocks in ASP.NET Core |
-| Naming convention | End async methods with `Async` (e.g., `GetEmployeeAsync`) |
-| Run parallel tasks | Use `Task.WhenAll(t1, t2)` to fire multiple tasks simultaneously |
+| Rule                             | Detail                                                           |
+| -------------------------------- | ---------------------------------------------------------------- |
+| Return type                      | `Task` (no return value) or `Task<T>` (returns T)                |
+| `async void`                     | Only for event handlers — errors are swallowed silently, avoid   |
+| Never use `.Result` or `.Wait()` | Blocks the thread, causes deadlocks in ASP.NET Core              |
+| Naming convention                | End async methods with `Async` (e.g., `GetEmployeeAsync`)        |
+| Run parallel tasks               | Use `Task.WhenAll(t1, t2)` to fire multiple tasks simultaneously |
 
 **Why does `.Result` cause a deadlock?**
 ASP.NET Core has a synchronization context. When you call `.Result`, the current thread blocks waiting for the task. Meanwhile, the task's continuation is waiting for the same thread to become free. Both wait for each other → deadlock.
@@ -217,23 +220,23 @@ public async Task<(List<Employee>, List<Department>)> GetAllAsync()
 **Why do different class types exist?**
 Not all classes serve the same purpose. C# gives you modifiers to express your design intent clearly — forcing subclasses to provide implementations (abstract), preventing misuse through inheritance (sealed), grouping utility methods (static), or splitting generated code from hand-written code (partial).
 
-| Class Type | Key Rule | When to Use |
-|---|---|---|
-| **abstract** | Cannot be instantiated; subclasses must implement abstract members | Base types with shared behavior — `Animal`, `Shape`, `Repository` |
-| **sealed** | Cannot be inherited from | Security-sensitive classes, performance optimization, final implementations |
-| **static** | No instances at all; only static members | Utility/helper classes — `Math`, `Console`, `StringHelper` |
-| **partial** | Definition split across multiple files; merged at compile time | Code generators (EF scaffolding, WinForms designer) alongside hand-written code |
+| Class Type   | Key Rule                                                           | When to Use                                                                     |
+| ------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| **abstract** | Cannot be instantiated; subclasses must implement abstract members | Base types with shared behavior — `Animal`, `Shape`, `Repository`               |
+| **sealed**   | Cannot be inherited from                                           | Security-sensitive classes, performance optimization, final implementations     |
+| **static**   | No instances at all; only static members                           | Utility/helper classes — `Math`, `Console`, `StringHelper`                      |
+| **partial**  | Definition split across multiple files; merged at compile time     | Code generators (EF scaffolding, WinForms designer) alongside hand-written code |
 
 **Abstract class vs Interface — when to use which:**
 
-| Aspect | Abstract Class | Interface |
-|---|---|---|
-| Can have fields/state | ✅ Yes | ❌ No (only properties) |
-| Can have constructors | ✅ Yes | ❌ No |
-| Implementation | ✅ Can have concrete methods | ✅ Default methods (C# 8+), but limited |
-| Inheritance | Single only | Multiple interfaces allowed |
-| Relationship | "is-a" — Dog **is an** Animal | "can-do" — Dog **implements** ISwimmable |
-| Use when | Sharing code + enforcing contract among related types | Defining a capability for unrelated types |
+| Aspect                | Abstract Class                                        | Interface                                 |
+| --------------------- | ----------------------------------------------------- | ----------------------------------------- |
+| Can have fields/state | ✅ Yes                                                | ❌ No (only properties)                   |
+| Can have constructors | ✅ Yes                                                | ❌ No                                     |
+| Implementation        | ✅ Can have concrete methods                          | ✅ Default methods (C# 8+), but limited   |
+| Inheritance           | Single only                                           | Multiple interfaces allowed               |
+| Relationship          | "is-a" — Dog **is an** Animal                         | "can-do" — Dog **implements** ISwimmable  |
+| Use when              | Sharing code + enforcing contract among related types | Defining a capability for unrelated types |
 
 ```csharp
 // abstract — forces subclasses to implement Sound()
@@ -274,12 +277,12 @@ Both are used for values that shouldn't change, but they differ in **when** the 
 - `const` — value is baked in at **compile time**. The compiler replaces every use of the constant with its literal value in the IL.
 - `readonly` — value is set at **runtime** (in the constructor or at declaration). The object is created first, then the value is assigned.
 
-| Aspect | `const` | `readonly` |
-|---|---|---|
-| When set | Compile-time only | Runtime (constructor or inline) |
-| Implicitly static? | ✅ Yes | ❌ No (can be instance or `static readonly`) |
-| Allowed types | Primitives and `string` only | Any type including objects |
-| Changeable after set? | Never | Only in constructor |
+| Aspect                | `const`                      | `readonly`                                   |
+| --------------------- | ---------------------------- | -------------------------------------------- |
+| When set              | Compile-time only            | Runtime (constructor or inline)              |
+| Implicitly static?    | ✅ Yes                       | ❌ No (can be instance or `static readonly`) |
+| Allowed types         | Primitives and `string` only | Any type including objects                   |
+| Changeable after set? | Never                        | Only in constructor                          |
 
 **Practical rule:** Use `const` for true compile-time constants (Pi, AppVersion string). Use `readonly` for values that are determined at startup (config values, connection strings, initialized objects).
 
@@ -313,6 +316,7 @@ An extension method lets you **add a new method to an existing type** without mo
 You can extend `string`, `IEnumerable<T>`, or any third-party class that you can't modify. In fact, **all LINQ methods** (`Where`, `Select`, `OrderBy`, etc.) are extension methods defined on `IEnumerable<T>`.
 
 **Rules for writing extension methods:**
+
 1. Must be in a `static` class
 2. The method must be `static`
 3. The first parameter must use the `this` keyword before the type being extended
@@ -348,14 +352,14 @@ Reflection is the ability to **inspect and interact with types at runtime** — 
 **When is reflection used?**
 You rarely write reflection code directly, but the frameworks you use do it constantly:
 
-| Framework / Tool | How It Uses Reflection |
-|---|---|
-| **EF Core** | Reads entity class properties to map them to DB columns |
-| **ASP.NET Core DI** | Reads constructor parameters to resolve dependencies |
-| **System.Text.Json** | Reads/writes properties by name at runtime |
-| **xUnit / NUnit** | Discovers `[Fact]` / `[Test]` methods and runs them |
-| **AutoMapper** | Maps matching property names between objects |
-| **[ApiController]** | Reads attributes on controller to configure behavior |
+| Framework / Tool     | How It Uses Reflection                                  |
+| -------------------- | ------------------------------------------------------- |
+| **EF Core**          | Reads entity class properties to map them to DB columns |
+| **ASP.NET Core DI**  | Reads constructor parameters to resolve dependencies    |
+| **System.Text.Json** | Reads/writes properties by name at runtime              |
+| **xUnit / NUnit**    | Discovers `[Fact]` / `[Test]` methods and runs them     |
+| **AutoMapper**       | Maps matching property names between objects            |
+| **[ApiController]**  | Reads attributes on controller to configure behavior    |
 
 **Downside:** Reflection is slower than direct code because it bypasses compile-time optimizations and uses late binding. Avoid it in performance-critical hot paths.
 
@@ -392,13 +396,13 @@ A delegate is a **type-safe function pointer** — a variable that holds a refer
 **Why does this matter?**
 Delegates are the foundation of events, callbacks, LINQ, and async programming in .NET. `Func<T>` and `Action<T>` are built-in generic delegate types that remove the need to declare your own delegate type for common patterns.
 
-| Type | Signature | Returns | Example Use |
-|---|---|---|---|
-| `Action` | No parameters | void | `Action log = () => Console.WriteLine("hi")` |
-| `Action<T>` | One parameter | void | `Action<string> print = s => Console.WriteLine(s)` |
-| `Func<T>` | No parameters | T | `Func<int> getAge = () => 30` |
-| `Func<T, TResult>` | One param, returns TResult | TResult | `Func<int,int> square = x => x * x` |
-| `Predicate<T>` | One param | bool | `Predicate<int> isEven = x => x % 2 == 0` |
+| Type               | Signature                  | Returns | Example Use                                        |
+| ------------------ | -------------------------- | ------- | -------------------------------------------------- |
+| `Action`           | No parameters              | void    | `Action log = () => Console.WriteLine("hi")`       |
+| `Action<T>`        | One parameter              | void    | `Action<string> print = s => Console.WriteLine(s)` |
+| `Func<T>`          | No parameters              | T       | `Func<int> getAge = () => 30`                      |
+| `Func<T, TResult>` | One param, returns TResult | TResult | `Func<int,int> square = x => x * x`                |
+| `Predicate<T>`     | One param                  | bool    | `Predicate<int> isEven = x => x % 2 == 0`          |
 
 **Multicast delegates:**
 A single delegate variable can hold references to **multiple methods**. When invoked, all methods are called in order. This is the foundation of C# events.
@@ -439,6 +443,7 @@ notify(); // Calls all three
 LINQ is a set of **extension methods** on `IEnumerable<T>` (and `IQueryable<T>`) that let you query and transform any collection using a consistent syntax — whether it's an in-memory list, a database via EF Core, or XML.
 
 **Two syntaxes:**
+
 - **Method syntax** (recommended): `employees.Where(e => e.Salary > 50000).OrderBy(e => e.Name)`
 - **Query syntax** (SQL-like): `from e in employees where e.Salary > 50000 orderby e.Name select e`
 
@@ -450,21 +455,21 @@ Most LINQ operators don't execute immediately. They build up a **query expressio
 **Why deferred execution matters:**
 You can chain multiple `.Where()` and `.Select()` calls — they all compose into one single efficient query. With EF Core, this means one SQL query is generated instead of multiple round trips.
 
-| LINQ Operator | What It Does | SQL Equivalent |
-|---|---|---|
-| `Where` | Filter elements | `WHERE` |
-| `Select` | Project/transform elements | `SELECT` |
-| `OrderBy` / `OrderByDescending` | Sort | `ORDER BY ASC/DESC` |
-| `GroupBy` | Group elements | `GROUP BY` |
-| `Join` | Join two collections | `INNER JOIN` |
-| `FirstOrDefault` | First match or null | `SELECT TOP 1` |
-| `Count` | Total elements | `COUNT(*)` |
-| `Sum` / `Average` / `Max` / `Min` | Aggregation | `SUM`, `AVG`, `MAX`, `MIN` |
-| `Skip` / `Take` | Pagination | `OFFSET` / `FETCH NEXT` |
-| `Any` | At least one match? | `EXISTS` |
-| `All` | All match? | `NOT EXISTS (WHERE NOT)` |
-| `Distinct` | Remove duplicates | `DISTINCT` |
-| `Include` (EF Core) | Eager load related data | `JOIN` |
+| LINQ Operator                     | What It Does               | SQL Equivalent             |
+| --------------------------------- | -------------------------- | -------------------------- |
+| `Where`                           | Filter elements            | `WHERE`                    |
+| `Select`                          | Project/transform elements | `SELECT`                   |
+| `OrderBy` / `OrderByDescending`   | Sort                       | `ORDER BY ASC/DESC`        |
+| `GroupBy`                         | Group elements             | `GROUP BY`                 |
+| `Join`                            | Join two collections       | `INNER JOIN`               |
+| `FirstOrDefault`                  | First match or null        | `SELECT TOP 1`             |
+| `Count`                           | Total elements             | `COUNT(*)`                 |
+| `Sum` / `Average` / `Max` / `Min` | Aggregation                | `SUM`, `AVG`, `MAX`, `MIN` |
+| `Skip` / `Take`                   | Pagination                 | `OFFSET` / `FETCH NEXT`    |
+| `Any`                             | At least one match?        | `EXISTS`                   |
+| `All`                             | All match?                 | `NOT EXISTS (WHERE NOT)`   |
+| `Distinct`                        | Remove duplicates          | `DISTINCT`                 |
+| `Include` (EF Core)               | Eager load related data    | `JOIN`                     |
 
 ```csharp
 var employees = new List<Employee> { ... };
@@ -501,17 +506,17 @@ bool hasHighEarners = employees.Any(e => e.Salary > 100000);
 
 ## 📝 Quick Recap
 
-| Feature | Version | One-liner |
-|---|---|---|
-| Primary Constructors | C# 12 | Constructor params on class declaration |
-| Collection Expressions `[]` | C# 12 | Unified syntax to create any collection |
-| Default Lambda Params | C# 12 | Lambdas can have default values |
-| Native AOT | .NET 8 | Compile to machine code at build time |
-| Frozen Collections | .NET 8 | Read-only, fast-lookup collections |
-| CLR | .NET Runtime | Runs IL via JIT, manages GC + exceptions |
-| async/await | C# 5+ | Non-blocking code, releases thread on await |
-| Delegates/Func/Action | C# | Type-safe function references |
-| LINQ | C# 3+ | Query any collection, deferred execution |
+| Feature                     | Version      | One-liner                                   |
+| --------------------------- | ------------ | ------------------------------------------- |
+| Primary Constructors        | C# 12        | Constructor params on class declaration     |
+| Collection Expressions `[]` | C# 12        | Unified syntax to create any collection     |
+| Default Lambda Params       | C# 12        | Lambdas can have default values             |
+| Native AOT                  | .NET 8       | Compile to machine code at build time       |
+| Frozen Collections          | .NET 8       | Read-only, fast-lookup collections          |
+| CLR                         | .NET Runtime | Runs IL via JIT, manages GC + exceptions    |
+| async/await                 | C# 5+        | Non-blocking code, releases thread on await |
+| Delegates/Func/Action       | C#           | Type-safe function references               |
+| LINQ                        | C# 3+        | Query any collection, deferred execution    |
 
 ---
 

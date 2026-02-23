@@ -108,12 +108,14 @@ app.Run();
 A controller is a class that **groups related API endpoints**. Each public method in a controller is an **action** — it handles one specific HTTP request. The controller inherits from `ControllerBase` (not `Controller`, which is for MVC with Views).
 
 **`ControllerBase` vs `Controller`:**
+
 - `ControllerBase` — for APIs. Has all HTTP response helpers (`Ok()`, `NotFound()`, `BadRequest()`, etc.) but no View-related methods
 - `Controller` — for MVC. Inherits from `ControllerBase` and adds `View()`, `PartialView()`, `ViewBag`, etc.
 - **Always use `ControllerBase` for Web APIs** — `Controller` would add unnecessary View overhead
 
 **What does `[ApiController]` do?**
 Four automatic behaviours:
+
 1. **Automatic model validation** — returns 400 Bad Request automatically if `ModelState.IsValid == false`, without you checking it manually
 2. **Binding source inference** — automatically figures out where to bind parameters from (body, route, query) without you needing `[FromBody]`, `[FromRoute]` etc.
 3. **Problem Details** — returns standardized RFC 7807 JSON error responses
@@ -121,13 +123,13 @@ Four automatic behaviours:
 
 **HTTP Verb to Status Code convention:**
 
-| HTTP Verb | Action | Success Code | Method to return |
-|---|---|---|---|
-| GET | Read one/all | 200 OK | `Ok(data)` |
-| POST | Create | 201 Created | `CreatedAtAction(...)` |
-| PUT | Full update | 204 No Content | `NoContent()` |
-| PATCH | Partial update | 204 No Content | `NoContent()` |
-| DELETE | Delete | 204 No Content | `NoContent()` |
+| HTTP Verb | Action         | Success Code   | Method to return       |
+| --------- | -------------- | -------------- | ---------------------- |
+| GET       | Read one/all   | 200 OK         | `Ok(data)`             |
+| POST      | Create         | 201 Created    | `CreatedAtAction(...)` |
+| PUT       | Full update    | 204 No Content | `NoContent()`          |
+| PATCH     | Partial update | 204 No Content | `NoContent()`          |
+| DELETE    | Delete         | 204 No Content | `NoContent()`          |
 
 **Interview Answer:** "`ControllerBase` is for APIs — no View support. `[ApiController]` enables automatic 400 responses when model validation fails, infers binding sources, and enforces attribute routing. Web API actions return `IActionResult` or `ActionResult<T>` — the specific type allows Swagger to generate accurate documentation."
 
@@ -301,6 +303,7 @@ public class EmployeeDto
 Without it, every controller action needs its own `try/catch` block. That's dozens of duplicate blocks, inconsistent error responses, and easy to forget. With a global exception middleware, errors are caught in **one place**, logged uniformly, and a consistent JSON error response is returned.
 
 **The strategy:**
+
 1. Let exceptions propagate naturally (no try/catch in controllers)
 2. A global middleware wraps the entire pipeline in a try/catch
 3. It logs the exception with context
@@ -463,6 +466,7 @@ _logger.LogCritical("App is going down: {Message}", ex.Message);
 JWT (JSON Web Token) is a compact, self-contained token format used for authentication. After login, the server gives the client a token. The client sends this token in every subsequent request. The server **verifies the token** without hitting the database — all the information needed is inside the token itself.
 
 **JWT structure — 3 parts separated by dots:**
+
 - **Header** — Base64-encoded JSON: the algorithm used (`HS256`)
 - **Payload** — Base64-encoded JSON: the claims (user ID, roles, expiry)
 - **Signature** — HMAC of `header.payload` using the secret key — proves the token wasn't tampered with
@@ -471,11 +475,13 @@ JWT (JSON Web Token) is a compact, self-contained token format used for authenti
 APIs are **stateless** — the server doesn't store session data. JWT solves this because the token carries all the identity information. The server just validates the signature using the secret key.
 
 **Authentication vs Authorization:**
+
 - **Authentication** = Who are you? (login → token)
 - **Authorization** = What are you allowed to do? (role check → allow/deny)
 - In ASP.NET Core: `UseAuthentication()` must come **before** `UseAuthorization()` in the pipeline
 
 **The full JWT flow:**
+
 ```
 1. Client → POST /api/auth/login  { username, password }
 2. Server validates credentials against DB
@@ -488,6 +494,7 @@ APIs are **stateless** — the server doesn't store session data. JWT solves thi
 ```
 
 **Common JWT claims:**
+
 - `sub` — Subject (user ID)
 - `name` — Username
 - `role` — User role(s)

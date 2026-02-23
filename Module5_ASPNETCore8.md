@@ -57,6 +57,7 @@ MVC is an **architectural pattern** that separates an application into three dis
 Without MVC, you'd have HTML, data access code, and business logic all mixed together in one file — like classic ASP pages. Changing the layout would risk breaking the data logic. MVC prevents this.
 
 **Request flow — step by step:**
+
 1. User types a URL / clicks a link
 2. **Routing** maps the URL to a Controller + Action method
 3. **Controller** action runs — calls services/repositories to get data
@@ -66,10 +67,10 @@ Without MVC, you'd have HTML, data access code, and business logic all mixed tog
 
 > **MVC = Model + View + Controller**
 
-| Component | Responsibility | Example |
-|---|---|---|
-| **Model** | Data + business logic | `Employee.cs` |
-| **View** | UI (HTML/Razor) | `Index.cshtml` |
+| Component      | Responsibility                      | Example                 |
+| -------------- | ----------------------------------- | ----------------------- |
+| **Model**      | Data + business logic               | `Employee.cs`           |
+| **View**       | UI (HTML/Razor)                     | `Index.cshtml`          |
 | **Controller** | Handles requests, coordinates M & V | `EmployeeController.cs` |
 
 **Interview Answer:** "MVC separates an application into three layers. The Controller handles the HTTP request and acts as the orchestrator — it calls services for data (Model) and passes that data to the View for rendering. This separation means you can change UI without touching business logic, and vice versa."
@@ -307,14 +308,14 @@ Without model binding you'd manually read `Request.Form["name"]`, `Request.Query
 
 **Binding sources (in order of priority):**
 
-| Attribute | Where it reads from | Example |
-|---|---|---|
-| `[FromRoute]` | URL path segment | `/employees/5` → `int id = 5` |
-| `[FromQuery]` | Query string | `?page=2` → `int page = 2` |
-| `[FromBody]` | Request body (JSON) | JSON payload → DTO object |
-| `[FromForm]` | HTML form fields | Form post → model object |
-| `[FromHeader]` | Request headers | `Authorization: Bearer ...` |
-| `[FromServices]` | DI container | Inject service into action |
+| Attribute        | Where it reads from | Example                       |
+| ---------------- | ------------------- | ----------------------------- |
+| `[FromRoute]`    | URL path segment    | `/employees/5` → `int id = 5` |
+| `[FromQuery]`    | Query string        | `?page=2` → `int page = 2`    |
+| `[FromBody]`     | Request body (JSON) | JSON payload → DTO object     |
+| `[FromForm]`     | HTML form fields    | Form post → model object      |
+| `[FromHeader]`   | Request headers     | `Authorization: Bearer ...`   |
+| `[FromServices]` | DI container        | Inject service into action    |
 
 **Without explicit attribute:** ASP.NET Core infers the source — simple types come from route/query, complex types come from body.
 
@@ -331,7 +332,8 @@ Without model binding you'd manually read `Request.Form["name"]`, `Request.Query
     <span asp-validation-for="Email" class="text-danger"></span>
   </div>
 
-  <button type="submit" class="btn btn-primary">Save</button>
+<button type="submit" class="btn btn-primary">Save</button>
+
 </form>
 ```
 

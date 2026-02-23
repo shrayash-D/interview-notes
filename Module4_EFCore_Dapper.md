@@ -215,6 +215,7 @@ EF Core uses a **Unit of Work** pattern via the Change Tracker. When you fetch e
 **Key point:** Nothing hits the database until you call `SaveChangesAsync()`. This means you can make multiple changes, add multiple records, and they all go to the database in one batch.
 
 **`FindAsync` vs `FirstOrDefaultAsync`:**
+
 - `FindAsync(id)` — checks the Change Tracker's in-memory cache first, then queries DB. Best when fetching by primary key.
 - `FirstOrDefaultAsync(e => e.Id == id)` — always queries the database. Use when filtering by non-PK columns.
 
@@ -258,6 +259,7 @@ When you write LINQ against a `DbSet<T>`, EF Core does NOT execute the query imm
 This is why EF Core can take a C# lambda like `.Where(e => e.Department.Name == "IT")` and turn it into `WHERE Department = 'IT'` in SQL — the lambda is not a regular C# function; it's an expression tree that the compiler captures for EF Core to inspect and translate.
 
 **IQueryable vs IEnumerable with EF Core:**
+
 - `DbSet<T>` implements `IQueryable<T>` — chaining `.Where()`, `.Select()`, `.OrderBy()` on it keeps building the SQL query
 - The moment you call `.ToList()` or `foreach`, the SQL is sent to the database
 - If you accidentally cast to `IEnumerable<T>` first, all filtering happens in C# memory on the full table — very inefficient for large tables
@@ -289,16 +291,19 @@ var totalCount = await _context.Employees.CountAsync();
 
 **What are migrations?**
 Migrations are the mechanism EF Core uses to **keep your database schema in sync with your C# entity classes**. Every time you change an entity (add a property, rename a column, add a new entity), you create a migration. The migration is a C# class with two methods:
+
 - `Up()` — applies the schema change (run with `database update`)
 - `Down()` — reverses the change (used for rollback)
 
 **Why migrations over manual SQL scripts?**
+
 - **Version controlled** — migration files live in your git repo alongside code
 - **Team-friendly** — each developer runs `database update` to apply everyone's migrations
 - **Repeatable** — you can recreate the database from scratch at any point by running all migrations
 - **Rollback support** — `database update PreviousMigrationName` rolls back to any point
 
 **The workflow:**
+
 1. Change your entity class
 2. `dotnet ef migrations add DescriptiveName` — generates the migration C# file
 3. Review the generated `Up()` and `Down()` methods
@@ -336,11 +341,11 @@ Choosing the wrong strategy is a very common source of performance problems — 
 **The N+1 problem explained:**
 If you load 100 employees with lazy loading and then access `employee.Department.Name` in a loop — EF Core fires 1 query to get employees, then 1 separate query per employee to load their department = **101 queries**. With eager loading (`.Include()`), it's just 1 query using a SQL JOIN.
 
-| Strategy | How It Works | SQL Generated | Best For |
-|---|---|---|---|
-| **Eager Loading** | `.Include()` — loads related data **in the same query** | JOIN | When you know you'll need related data — avoids N+1 |
-| **Lazy Loading** | Related data loaded **automatically on first access** (via proxy) | Separate query per access | Simple cases — dangerous in loops (N+1 problem) |
-| **Explicit Loading** | You **manually trigger** loading with `.Load()` when ready | Separate query, your choice | When you sometimes need related data, sometimes don't |
+| Strategy             | How It Works                                                      | SQL Generated               | Best For                                              |
+| -------------------- | ----------------------------------------------------------------- | --------------------------- | ----------------------------------------------------- |
+| **Eager Loading**    | `.Include()` — loads related data **in the same query**           | JOIN                        | When you know you'll need related data — avoids N+1   |
+| **Lazy Loading**     | Related data loaded **automatically on first access** (via proxy) | Separate query per access   | Simple cases — dangerous in loops (N+1 problem)       |
+| **Explicit Loading** | You **manually trigger** loading with `.Load()` when ready        | Separate query, your choice | When you sometimes need related data, sometimes don't |
 
 **Interview Answer:** "Eager loading uses `.Include()` to load related data in a single SQL JOIN query — best when you know you'll need the related data. Lazy loading loads related data automatically the first time you access the navigation property, but this causes the N+1 problem in loops. Explicit loading is a manual call to load related data exactly when you need it."
 

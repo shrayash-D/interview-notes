@@ -171,12 +171,14 @@ GROUP BY CUBE(Department, Year);
 A CTE is a **temporary named result set** that you define at the top of a query using the `WITH` keyword. It exists only for the duration of that one query — it is not stored, not cached, just a named reference.
 
 **Why use it?**
+
 - Makes complex queries readable by breaking them into named steps
 - Replaces deeply nested subqueries that are hard to read
 - Can be referenced multiple times within the same query
 - The only way to write recursive queries in SQL Server
 
 **CTE vs Subquery vs Temp Table:**
+
 - **Subquery** — Nested inside the main query, often repeated if needed multiple times, hard to read
 - **CTE** — Named, at the top, readable, but exists only once per query execution
 - **Temp Table** — Physically stored in `tempdb`, survives across multiple queries in a session, good for large datasets or reuse across statements
@@ -198,10 +200,12 @@ SELECT * FROM HighPaidEmployees WHERE Department = 'IT';
 
 **What is it?**
 A recursive CTE is a CTE that **calls itself** — it has two parts joined with `UNION ALL`:
+
 1. **Anchor member** — the starting row(s), no recursion
 2. **Recursive member** — references the CTE itself to get the next level
 
 **When to use it:**
+
 - Organizational hierarchies (employee → manager → CEO)
 - Category trees (subcategory → parent category)
 - Bill of materials
@@ -310,15 +314,16 @@ An index is a **separate data structure** that SQL Server maintains alongside yo
 
 ### Types of Indexes
 
-| Type | Description | Count per table |
-|---|---|---|
-| **Clustered Index** | Sorts and physically stores the actual table data in this order. The table IS the clustered index. | Only **1** — because you can only sort data one way |
-| **Non-Clustered Index** | A separate structure with index key + pointer back to the actual row. | **Multiple** allowed |
-| **Unique Index** | Enforces uniqueness on the indexed column(s) | Multiple |
-| **Covering Index** | Non-clustered index that includes all columns the query needs (via INCLUDE) — avoids going back to the base table | Multiple |
-| **Filtered Index** | Index on a subset of rows (with a WHERE clause) — smaller, more efficient for selective queries | Multiple |
+| Type                    | Description                                                                                                       | Count per table                                     |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| **Clustered Index**     | Sorts and physically stores the actual table data in this order. The table IS the clustered index.                | Only **1** — because you can only sort data one way |
+| **Non-Clustered Index** | A separate structure with index key + pointer back to the actual row.                                             | **Multiple** allowed                                |
+| **Unique Index**        | Enforces uniqueness on the indexed column(s)                                                                      | Multiple                                            |
+| **Covering Index**      | Non-clustered index that includes all columns the query needs (via INCLUDE) — avoids going back to the base table | Multiple                                            |
+| **Filtered Index**      | Index on a subset of rows (with a WHERE clause) — smaller, more efficient for selective queries                   | Multiple                                            |
 
 **Clustered vs Non-Clustered — in plain English:**
+
 - **Clustered** = The rows ARE stored in index order. Like a phone book sorted by last name. There can only be one because you can only sort data one way. Primary Keys automatically get a clustered index.
 - **Non-clustered** = A separate lookup structure. Like the index in a textbook — it doesn't rearrange the pages, it just tells you which page to go to.
 
@@ -371,6 +376,7 @@ ALTER INDEX IX_Employee_Name ON Employees REBUILD;
 A stored procedure is a **named, saved block of SQL code** stored inside the database that you can execute by name. The first time it runs, SQL Server compiles it and caches the execution plan — subsequent calls reuse the cached plan, making it faster.
 
 **Why use stored procedures?**
+
 - **Performance:** Pre-compiled and cached execution plan
 - **Security:** Grant EXECUTE permission without exposing the underlying tables
 - **Reusability:** Write once, call from anywhere (app, reports, other SPs)
@@ -434,6 +440,7 @@ PRINT @Count;
 A UDF is a reusable piece of SQL logic that **always returns a value** and can be used directly inside SQL statements like `SELECT`, `WHERE`, and `FROM`. Unlike stored procedures, functions cannot modify data (no `INSERT`, `UPDATE`, `DELETE`).
 
 **Three types:**
+
 - **Scalar** — Returns a single value (one number, one string). Used inline in SELECT/WHERE.
 - **Inline Table-Valued (ITVF)** — Returns a table from a single SELECT. SQL Server can inline/optimize it. Preferred over multi-statement TVF for performance.
 - **Multi-Statement Table-Valued (MSTVF)** — Returns a table but uses multiple statements with conditional logic. Less performant because SQL Server treats the result as opaque — it can't optimize inside it.
@@ -499,16 +506,19 @@ SELECT * FROM dbo.GetTopEarners(5);
 A trigger is SQL code that **automatically executes** when a specific event (`INSERT`, `UPDATE`, `DELETE`) occurs on a table. You don't call it manually — the database fires it automatically.
 
 **Special tables inside triggers:**
+
 - `INSERTED` — Contains the new rows (available in INSERT and UPDATE triggers)
 - `DELETED` — Contains the old rows (available in DELETE and UPDATE triggers)
 - In an UPDATE trigger, `DELETED` has the old values and `INSERTED` has the new values
 
 **When to use triggers:**
+
 - Auditing — auto-log every INSERT/UPDATE/DELETE to an audit table
 - Enforcing business rules that can't be done with constraints
 - Soft deletes — intercept DELETE and set `IsActive = 0` instead
 
 **Why to be careful with triggers:**
+
 - **Hidden logic** — A developer doing an INSERT has no idea a trigger is running behind the scenes
 - **Hard to debug** — Trigger errors appear as part of the DML operation, confusing the caller
 - **Performance** — Triggers fire on every matching DML event, adding overhead
@@ -646,12 +656,12 @@ A transaction is a group of SQL operations that are treated as a **single atomic
 
 **ACID — the four guarantees of transactions:**
 
-| Property | Meaning | Bank Example |
-|---|---|---|
-| **Atomicity** | All or nothing — no partial commits | Transfer: both debit AND credit happen, or neither |
-| **Consistency** | DB goes from one valid state to another valid state | Balance can't go below zero if business rule says so |
-| **Isolation** | Concurrent transactions don't interfere with each other | Two users booking the last seat — only one wins |
-| **Durability** | Once committed, data survives crashes, restarts | Even server crash after COMMIT doesn't lose data |
+| Property        | Meaning                                                 | Bank Example                                         |
+| --------------- | ------------------------------------------------------- | ---------------------------------------------------- |
+| **Atomicity**   | All or nothing — no partial commits                     | Transfer: both debit AND credit happen, or neither   |
+| **Consistency** | DB goes from one valid state to another valid state     | Balance can't go below zero if business rule says so |
+| **Isolation**   | Concurrent transactions don't interfere with each other | Two users booking the last seat — only one wins      |
+| **Durability**  | Once committed, data survives crashes, restarts         | Even server crash after COMMIT doesn't lose data     |
 
 **Interview Answer:** "A transaction groups SQL operations into an atomic unit — either all succeed or all fail, maintaining database integrity. ACID properties guarantee: Atomicity (all or nothing), Consistency (DB stays valid), Isolation (concurrent transactions don't interfere), Durability (committed data survives crashes)."
 
