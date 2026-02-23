@@ -76,29 +76,48 @@ CREATE TABLE Invoices (
 
 ## 3.2 Advanced SQL Concepts
 
-### OVER() Clause
+### OVER() Clause — Window Functions
 
-> Performs calculations **across a set of rows** related to the current row, without collapsing them into groups (unlike GROUP BY).
+**What is it?**
+The `OVER()` clause turns an aggregate function (like `SUM`, `AVG`, `COUNT`) into a **window function**. The key difference from `GROUP BY` is: window functions calculate across a set of rows but **do not collapse those rows** — every original row stays in the result with an extra calculated column added.
+
+**In plain English:** `GROUP BY` squishes many rows into one summary row per group. `OVER()` keeps all original rows but adds a calculation column alongside each one.
+
+**Why use it?**
+Imagine you want each employee's salary AND the average salary of their department in the same row. With `GROUP BY` you can't do this — you'd either get just the average, or you'd need a self-join. `OVER()` makes it trivial.
 
 ```sql
 -- Get each employee's salary AND the average salary of their department
 SELECT Name, Department, Salary,
        AVG(Salary) OVER(PARTITION BY Department) AS DeptAvgSalary
 FROM Employees;
+-- Each row keeps its individual data + gets the department average alongside it
 ```
 
 ### PARTITION BY
 
-> Divides the result set into **partitions** (groups) for window functions. Like GROUP BY, but keeps all rows.
+**What is it?**
+`PARTITION BY` is used inside `OVER()` to divide rows into groups (partitions) for the window calculation. It works like `GROUP BY` for defining the scope of the window function, but again — rows are NOT collapsed.
 
 ```sql
 SELECT Name, Department, Salary,
        SUM(Salary) OVER(PARTITION BY Department) AS DeptTotal
 FROM Employees;
--- Each row shows individual salary + total department salary
+-- Each row shows individual salary + total department salary side-by-side
 ```
 
+**Interview Answer:** "Window functions with `OVER()` perform calculations across a related set of rows without collapsing them. `PARTITION BY` defines the grouping scope. Unlike `GROUP BY`, you keep all original rows and get the aggregate alongside each — perfect for things like 'show each employee's salary vs their department average'."
+
 ### ROW_NUMBER, RANK, DENSE_RANK
+
+**What are they?**
+These are **ranking window functions** that assign a number to each row based on an ordering. The difference is how they handle tied values.
+
+- **ROW_NUMBER** — Always unique. Even if two rows have the same value, they get different numbers. Order between ties is arbitrary.
+- **RANK** — Tied rows get the same rank, then the next rank **skips** the gap (1, 2, 2, 4 — rank 3 is skipped).
+- **DENSE_RANK** — Tied rows get the same rank, but the next rank does **not skip** (1, 2, 2, 3 — no gap).
+
+**Interview tip:** The difference between `RANK` and `DENSE_RANK` is the most common follow-up question.
 
 | Function       | What It Does                          | Handles Ties             |
 | -------------- | ------------------------------------- | ------------------------ |
@@ -148,21 +167,45 @@ GROUP BY CUBE(Department, Year);
 
 ### Common Table Expression (CTE)
 
-> A **temporary named result set** that exists only during one query. Makes complex queries readable.
+**What is it?**
+A CTE is a **temporary named result set** that you define at the top of a query using the `WITH` keyword. It exists only for the duration of that one query — it is not stored, not cached, just a named reference.
+
+**Why use it?**
+- Makes complex queries readable by breaking them into named steps
+- Replaces deeply nested subqueries that are hard to read
+- Can be referenced multiple times within the same query
+- The only way to write recursive queries in SQL Server
+
+**CTE vs Subquery vs Temp Table:**
+- **Subquery** — Nested inside the main query, often repeated if needed multiple times, hard to read
+- **CTE** — Named, at the top, readable, but exists only once per query execution
+- **Temp Table** — Physically stored in `tempdb`, survives across multiple queries in a session, good for large datasets or reuse across statements
 
 ```sql
--- Basic CTE
+-- Basic CTE — replace a messy nested subquery with a named, readable block
 WITH HighPaidEmployees AS (
     SELECT Name, Salary, Department
     FROM Employees
     WHERE Salary > 70000
 )
 SELECT * FROM HighPaidEmployees WHERE Department = 'IT';
+-- Much more readable than: SELECT * FROM (SELECT ... FROM Employees WHERE ...) sub WHERE ...
 ```
+
+**Interview Answer:** "A CTE is a temporary named result set defined with `WITH` that exists only for one query. It improves readability, replaces nested subqueries, and is the only way to write recursive queries in SQL Server. Unlike a temp table, a CTE isn't stored — it's just a named reference inside a single query."
 
 ### Recursive CTE
 
-> A CTE that **calls itself** — useful for hierarchies (org charts, parent-child data).
+**What is it?**
+A recursive CTE is a CTE that **calls itself** — it has two parts joined with `UNION ALL`:
+1. **Anchor member** — the starting row(s), no recursion
+2. **Recursive member** — references the CTE itself to get the next level
+
+**When to use it:**
+- Organizational hierarchies (employee → manager → CEO)
+- Category trees (subcategory → parent category)
+- Bill of materials
+- Any parent-child relationship stored in the same table
 
 ```sql
 -- Get employee hierarchy
@@ -256,11 +299,28 @@ DROP VIEW vw_ActiveEmployees;
 
 ### What is an Index?
 
-> An **Index** is like a **book's index** — it helps SQL Server find data quickly without scanning every row.
+**What is it?**
+An index is a **separate data structure** that SQL Server maintains alongside your table to speed up data lookups. Without an index, SQL Server must scan every row (full table scan) to find matching data. With an index, it can jump directly to the relevant rows.
 
-**Interview Answer:** "An index is a data structure that improves the speed of data retrieval on a table. Without an index, SQL Server does a full table scan. With an index, it can jump directly to the relevant rows."
+**Real-world analogy:** A book's index at the back. Instead of reading every page to find "recursion", you look it up in the index and go directly to page 245.
+
+**The trade-off:** Indexes speed up reads (`SELECT`) but slow down writes (`INSERT`, `UPDATE`, `DELETE`) because SQL Server must also update the index when data changes. Don't index every column — index columns used frequently in `WHERE`, `JOIN`, and `ORDER BY`.
+
+**Interview Answer:** "An index is a data structure that improves SELECT performance by allowing SQL Server to locate rows without scanning the entire table. The trade-off is slower writes because the index must be updated too. Clustered indexes physically sort the table data; non-clustered indexes are separate structures with pointers to the actual rows."
 
 ### Types of Indexes
+
+| Type | Description | Count per table |
+|---|---|---|
+| **Clustered Index** | Sorts and physically stores the actual table data in this order. The table IS the clustered index. | Only **1** — because you can only sort data one way |
+| **Non-Clustered Index** | A separate structure with index key + pointer back to the actual row. | **Multiple** allowed |
+| **Unique Index** | Enforces uniqueness on the indexed column(s) | Multiple |
+| **Covering Index** | Non-clustered index that includes all columns the query needs (via INCLUDE) — avoids going back to the base table | Multiple |
+| **Filtered Index** | Index on a subset of rows (with a WHERE clause) — smaller, more efficient for selective queries | Multiple |
+
+**Clustered vs Non-Clustered — in plain English:**
+- **Clustered** = The rows ARE stored in index order. Like a phone book sorted by last name. There can only be one because you can only sort data one way. Primary Keys automatically get a clustered index.
+- **Non-clustered** = A separate lookup structure. Like the index in a textbook — it doesn't rearrange the pages, it just tells you which page to go to.
 
 | Type                    | Description                                                                             |
 | ----------------------- | --------------------------------------------------------------------------------------- |
@@ -307,9 +367,20 @@ ALTER INDEX IX_Employee_Name ON Employees REBUILD;
 
 ### What is a Stored Procedure?
 
-> A **Stored Procedure (SP)** is a **pre-compiled collection of SQL statements** saved in the database that can be executed repeatedly.
+**What is it?**
+A stored procedure is a **named, saved block of SQL code** stored inside the database that you can execute by name. The first time it runs, SQL Server compiles it and caches the execution plan — subsequent calls reuse the cached plan, making it faster.
 
-**Benefits:** Faster execution (pre-compiled), reusability, security, reduced network traffic.
+**Why use stored procedures?**
+- **Performance:** Pre-compiled and cached execution plan
+- **Security:** Grant EXECUTE permission without exposing the underlying tables
+- **Reusability:** Write once, call from anywhere (app, reports, other SPs)
+- **Reduced network traffic:** Send one `EXEC` call instead of a long SQL query
+- **Encapsulation:** Business logic lives in the database, centralized
+
+**Stored Procedure vs ad-hoc SQL:**
+Ad-hoc SQL (SQL written directly in your app code) is compiled fresh every time unless the execution plan is cached by coincidence. Stored procedures guarantee the plan is cached and reused.
+
+**Interview Answer:** "A stored procedure is a pre-compiled block of SQL stored in the database. Benefits are performance (cached execution plan), security (grant EXEC without table access), reusability, and reduced network traffic. The main downside is that business logic is split between the application and database, making maintenance harder."
 
 ### Types of Stored Procedures
 
@@ -359,11 +430,15 @@ PRINT @Count;
 
 ### User-Defined Functions (UDFs)
 
-| Type                             | Returns                     | Usage                    |
-| -------------------------------- | --------------------------- | ------------------------ |
-| **Scalar Function**              | Single value                | Can use in SELECT, WHERE |
-| **Inline Table-Valued**          | Table (single SELECT)       | Use like a table         |
-| **Multi-Statement Table-Valued** | Table (multiple statements) | More complex logic       |
+**What is it?**
+A UDF is a reusable piece of SQL logic that **always returns a value** and can be used directly inside SQL statements like `SELECT`, `WHERE`, and `FROM`. Unlike stored procedures, functions cannot modify data (no `INSERT`, `UPDATE`, `DELETE`).
+
+**Three types:**
+- **Scalar** — Returns a single value (one number, one string). Used inline in SELECT/WHERE.
+- **Inline Table-Valued (ITVF)** — Returns a table from a single SELECT. SQL Server can inline/optimize it. Preferred over multi-statement TVF for performance.
+- **Multi-Statement Table-Valued (MSTVF)** — Returns a table but uses multiple statements with conditional logic. Less performant because SQL Server treats the result as opaque — it can't optimize inside it.
+
+**Interview Answer:** "Functions always return a value and can be used in SQL expressions. Scalar functions return a single value; table-valued functions return a table and can be used in FROM clauses like a table. Unlike stored procedures, functions cannot perform DML operations and cannot use transactions."
 
 ```sql
 -- Scalar Function
@@ -420,7 +495,24 @@ SELECT * FROM dbo.GetTopEarners(5);
 
 ### What is a Trigger?
 
-> A **Trigger** is a special stored procedure that **automatically runs** when a specific event (INSERT, UPDATE, DELETE) happens on a table.
+**What is it?**
+A trigger is SQL code that **automatically executes** when a specific event (`INSERT`, `UPDATE`, `DELETE`) occurs on a table. You don't call it manually — the database fires it automatically.
+
+**Special tables inside triggers:**
+- `INSERTED` — Contains the new rows (available in INSERT and UPDATE triggers)
+- `DELETED` — Contains the old rows (available in DELETE and UPDATE triggers)
+- In an UPDATE trigger, `DELETED` has the old values and `INSERTED` has the new values
+
+**When to use triggers:**
+- Auditing — auto-log every INSERT/UPDATE/DELETE to an audit table
+- Enforcing business rules that can't be done with constraints
+- Soft deletes — intercept DELETE and set `IsActive = 0` instead
+
+**Why to be careful with triggers:**
+- **Hidden logic** — A developer doing an INSERT has no idea a trigger is running behind the scenes
+- **Hard to debug** — Trigger errors appear as part of the DML operation, confusing the caller
+- **Performance** — Triggers fire on every matching DML event, adding overhead
+- **Cascading triggers** — A trigger can fire another trigger, causing hard-to-trace chains
 
 ### Types of Triggers
 
@@ -547,16 +639,21 @@ END CATCH;
 
 ### What is a Transaction?
 
-> A **Transaction** is a group of SQL operations that are treated as a **single unit** — either **ALL succeed** or **ALL fail**.
+**What is it?**
+A transaction is a group of SQL operations that are treated as a **single atomic unit** — either ALL operations succeed and commit, or if ANY operation fails, ALL are rolled back as if none of them happened.
 
-### ACID Properties
+**The classic example:** Bank transfer. You need to debit Account A AND credit Account B. If the debit succeeds but the credit fails (e.g., network error), you can't leave Account A deducted without Account B receiving the money. A transaction ensures both happen or neither happens.
 
-| Property            | Meaning                                      | Example                                                 |
-| ------------------- | -------------------------------------------- | ------------------------------------------------------- |
-| **A - Atomicity**   | All or nothing                               | Transfer money: debit AND credit both happen or neither |
-| **C - Consistency** | DB goes from one valid state to another      | Balance can't go negative if rule says so               |
-| **I - Isolation**   | Transactions don't interfere with each other | Two people booking last seat — only one succeeds        |
-| **D - Durability**  | Once committed, data survives crashes        | Even if server crashes after COMMIT, data is safe       |
+**ACID — the four guarantees of transactions:**
+
+| Property | Meaning | Bank Example |
+|---|---|---|
+| **Atomicity** | All or nothing — no partial commits | Transfer: both debit AND credit happen, or neither |
+| **Consistency** | DB goes from one valid state to another valid state | Balance can't go below zero if business rule says so |
+| **Isolation** | Concurrent transactions don't interfere with each other | Two users booking the last seat — only one wins |
+| **Durability** | Once committed, data survives crashes, restarts | Even server crash after COMMIT doesn't lose data |
+
+**Interview Answer:** "A transaction groups SQL operations into an atomic unit — either all succeed or all fail, maintaining database integrity. ACID properties guarantee: Atomicity (all or nothing), Consistency (DB stays valid), Isolation (concurrent transactions don't interfere), Durability (committed data survives crashes)."
 
 ```sql
 BEGIN TRANSACTION;

@@ -46,21 +46,33 @@ MyApp/
 
 ## 5.3 MVC Architecture
 
+**What is MVC?**
+MVC is an **architectural pattern** that separates an application into three distinct concerns so that each part can change independently without breaking the others.
+
+- **Model** — Represents the data and business rules. It knows nothing about how it's displayed.
+- **View** — Responsible only for rendering. It knows nothing about where the data came from.
+- **Controller** — The orchestrator. It receives HTTP requests, decides what to do, calls the Model to get data, passes that data to the View.
+
+**Why separate these concerns?**
+Without MVC, you'd have HTML, data access code, and business logic all mixed together in one file — like classic ASP pages. Changing the layout would risk breaking the data logic. MVC prevents this.
+
+**Request flow — step by step:**
+1. User types a URL / clicks a link
+2. **Routing** maps the URL to a Controller + Action method
+3. **Controller** action runs — calls services/repositories to get data
+4. Controller passes the data as a **Model** to the View
+5. **View** renders HTML using the Model data
+6. HTML response is sent back to the browser
+
 > **MVC = Model + View + Controller**
 
-| Component      | Responsibility                      | Example                 |
-| -------------- | ----------------------------------- | ----------------------- |
-| **Model**      | Data + business logic               | `Employee.cs`           |
-| **View**       | UI (HTML/Razor)                     | `Index.cshtml`          |
+| Component | Responsibility | Example |
+|---|---|---|
+| **Model** | Data + business logic | `Employee.cs` |
+| **View** | UI (HTML/Razor) | `Index.cshtml` |
 | **Controller** | Handles requests, coordinates M & V | `EmployeeController.cs` |
 
-### Request Lifecycle
-
-```
-User → URL → Routing → Controller → Action Method → Model (get data) → View (render HTML) → Response to User
-```
-
-**Interview Answer:** "In MVC, when a user makes a request, the Router directs it to the right Controller. The Controller calls the Model to get/save data, then passes that data to a View. The View renders the HTML and sends it back to the user."
+**Interview Answer:** "MVC separates an application into three layers. The Controller handles the HTTP request and acts as the orchestrator — it calls services for data (Model) and passes that data to the View for rendering. This separation means you can change UI without touching business logic, and vice versa."
 
 ---
 
@@ -221,7 +233,18 @@ public class EmployeeController : Controller
 
 ## 5.7 Routing
 
-### Convention-based Routing
+**What is routing?**
+Routing is the mechanism ASP.NET Core uses to **match an incoming HTTP request URL to an action method** in a controller. The routing system looks at the URL and the HTTP verb, and decides which controller and which action should handle it.
+
+**Two types of routing:**
+
+**Convention-based routing:** You define a pattern template (e.g., `{controller}/{action}/{id?}`). Every controller and action in the app follows this pattern automatically. Good for MVC apps with many pages that follow a consistent URL structure.
+
+**Attribute routing:** You put route attributes directly on the controller class or action method. Each action explicitly declares its own URL. Recommended for Web APIs because each endpoint often has a unique URL that doesn't fit a generic pattern.
+
+**Route constraints:** Constraints restrict what a route segment matches. For example, `{id:int}` only matches if `id` is an integer — string IDs won't match, preventing invalid route matches.
+
+**Interview Answer:** "Convention-based routing uses a URL template applied globally across all controllers. Attribute routing puts the route definition directly on the controller/action, giving you full control. For Web APIs, attribute routing is preferred because you control exactly what each endpoint's URL looks like."
 
 ```csharp
 // In Program.cs
@@ -274,8 +297,26 @@ public class EmployeeController : Controller
 
 ## 5.8 Forms and User Input
 
-```html
-@model Employee
+### Model Binding
+
+**What is it?**
+Model binding is ASP.NET Core's automatic process of reading values from the HTTP request (form fields, query string, route parameters, JSON body, headers) and mapping them into your action method's parameters.
+
+**Why it matters:**
+Without model binding you'd manually read `Request.Form["name"]`, `Request.QueryString["page"]`, `Request.Body` etc. Model binding does all of this automatically and puts the values directly into your strongly-typed C# objects.
+
+**Binding sources (in order of priority):**
+
+| Attribute | Where it reads from | Example |
+|---|---|---|
+| `[FromRoute]` | URL path segment | `/employees/5` → `int id = 5` |
+| `[FromQuery]` | Query string | `?page=2` → `int page = 2` |
+| `[FromBody]` | Request body (JSON) | JSON payload → DTO object |
+| `[FromForm]` | HTML form fields | Form post → model object |
+| `[FromHeader]` | Request headers | `Authorization: Bearer ...` |
+| `[FromServices]` | DI container | Inject service into action |
+
+**Without explicit attribute:** ASP.NET Core infers the source — simple types come from route/query, complex types come from body.
 
 <form asp-action="Create" method="post">
   <div class="form-group">

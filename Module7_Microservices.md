@@ -74,9 +74,21 @@ Solution/
 
 ## 7.4 Inter-Service Communication
 
+**The fundamental question:** How does Service A talk to Service B?
+
+**Two communication styles:**
+- **Synchronous** — Service A sends a request and **waits** for Service B's response before continuing. If Service B is slow or down, Service A is blocked.
+- **Asynchronous** — Service A publishes a message to a **message broker** and continues immediately. Service B reads and processes the message whenever it's ready. No waiting, no blocking.
+
+**When to use which:**
+- **Synchronous (HTTP/gRPC)** — When Service A needs the response to continue its own work (e.g., get user details to include in an order)
+- **Asynchronous (Message broker)** — When Service A doesn't need an immediate response (e.g., send a notification email after order placed)
+
+**Interview Answer:** "Microservices communicate either synchronously (HTTP/REST or gRPC — caller waits for response) or asynchronously (message broker like RabbitMQ/Azure Service Bus — fire and forget). Sync is simpler but creates tight coupling and propagates failures. Async is more resilient but adds complexity."
+
 ### Option 1: HTTP/REST (Synchronous)
 
-> Service A calls Service B directly over HTTP. Simple but tightly coupled.
+> Service A calls Service B directly over HTTP. Simple but tightly coupled — if B is down, A fails too.
 
 ```csharp
 // Register HttpClient for DI
@@ -202,7 +214,17 @@ public class EmployeeCreatedHandler
 
 ## 7.5 Service Discovery
 
-> **Service Discovery** is how services find each other's addresses. Instead of hardcoding `http://192.168.1.5:5001`, services register themselves and look each other up by name.
+**What is it?**
+In a microservices system, services run in containers with dynamic IPs that change on restart, scaling, or redeployment. You can't hardcode `http://192.168.1.5:5001` — that IP might be different tomorrow. Service discovery solves this: each service **registers itself** with a central registry, and other services look up the current address by name.
+
+**Two models:**
+- **Client-side discovery** — the calling service queries the registry and picks an address itself (Netflix Ribbon pattern)
+- **Server-side discovery** — the caller sends to a load balancer/gateway, which does the lookup (Kubernetes does this)
+
+**API Gateway Pattern:**
+Rather than having each client know about every microservice's address, an **API Gateway** is a single entry point. Clients talk to one URL; the gateway routes to the right service. It also handles cross-cutting concerns: authentication, rate limiting, SSL termination, logging.
+
+> **Service Discovery** is how services find each other's addresses dynamically instead of using hardcoded IPs.
 
 ```
 Without Discovery:  Service A calls http://192.168.1.5:5001 (hardcoded IP — breaks if server moves)
@@ -246,6 +268,15 @@ dotnet add package Ocelot
 ---
 
 ## 7.6 Data Management in Microservices
+
+**The hardest part of microservices is data.**
+In a monolith, you can do a database JOIN across tables and wrap everything in one transaction. In microservices, each service owns its own database — you can't do cross-service JOINs, and distributed transactions are extremely hard.
+
+**Database per Service — why it's the rule:**
+If all services share one database, changing a table schema in one service can break other services. The database becomes a coupling point — defeating the purpose of microservices. Database-per-service means each service is truly independent.
+
+**Eventual consistency:**
+Because services have separate databases, data can be temporarily inconsistent. For example, after an order is placed, the inventory service may not have processed the stock reduction yet. The system will eventually become consistent — this is called **eventual consistency** and is a design trade-off you accept in distributed systems.
 
 ### Database per Service Pattern ✅ (Recommended)
 

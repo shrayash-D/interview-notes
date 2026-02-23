@@ -4,9 +4,18 @@
 
 ## 4.1 What is ORM?
 
+**What is it?**
+ORM (Object-Relational Mapping) is a technique that lets you work with a relational database using **C# objects** instead of writing raw SQL. The ORM automatically translates your C# code into SQL queries.
+
+**The problem it solves:**
+Without ORM, you write raw SQL strings, manually open/close connections, read `SqlDataReader` row by row, and manually map each column to a C# property. This is tedious, error-prone, and hard to maintain. ORM automates all of that.
+
+**The trade-off:**
+ORM generates SQL for you, which is convenient, but sometimes the generated SQL is not as optimal as hand-written SQL. For read-heavy, performance-critical queries, a micro-ORM like Dapper (which lets you write the SQL yourself) is often better.
+
 > **ORM (Object-Relational Mapping)** maps **database tables to C# classes** and **rows to objects**. You write C# code instead of SQL.
 
-**Interview Answer:** "ORM is a technique that lets you interact with a database using C# objects instead of writing raw SQL. EF Core is Microsoft's ORM for .NET."
+**Interview Answer:** "ORM is a technique that lets you interact with a database using C# objects instead of writing raw SQL. EF Core is Microsoft's full ORM — it generates SQL from LINQ queries. The advantage is productivity; the trade-off is that generated SQL may not always be as efficient as hand-crafted queries."
 
 ---
 
@@ -200,6 +209,15 @@ public class Department
 
 ## 4.6 CRUD Operations with EF Core
 
+**How EF Core CRUD works:**
+EF Core uses a **Unit of Work** pattern via the Change Tracker. When you fetch entities, EF Core starts tracking them. When you modify them, EF Core detects the changes. When you call `SaveChangesAsync()`, EF Core generates the appropriate SQL (INSERT/UPDATE/DELETE) and executes everything in a single database round trip.
+
+**Key point:** Nothing hits the database until you call `SaveChangesAsync()`. This means you can make multiple changes, add multiple records, and they all go to the database in one batch.
+
+**`FindAsync` vs `FirstOrDefaultAsync`:**
+- `FindAsync(id)` — checks the Change Tracker's in-memory cache first, then queries DB. Best when fetching by primary key.
+- `FirstOrDefaultAsync(e => e.Id == id)` — always queries the database. Use when filtering by non-PK columns.
+
 ```csharp
 // CREATE
 var emp = new Employee { Name = "Alice", Salary = 75000 };
@@ -234,6 +252,16 @@ await _context.Employees
 
 ## 4.7 LINQ Queries in EF Core
 
+**How it works:**
+When you write LINQ against a `DbSet<T>`, EF Core does NOT execute the query immediately. It builds an **expression tree** — a tree-like representation of the query in memory. When you call `.ToListAsync()` or another terminal operator, EF Core's query provider **translates the expression tree into SQL** and sends it to the database.
+
+This is why EF Core can take a C# lambda like `.Where(e => e.Department.Name == "IT")` and turn it into `WHERE Department = 'IT'` in SQL — the lambda is not a regular C# function; it's an expression tree that the compiler captures for EF Core to inspect and translate.
+
+**IQueryable vs IEnumerable with EF Core:**
+- `DbSet<T>` implements `IQueryable<T>` — chaining `.Where()`, `.Select()`, `.OrderBy()` on it keeps building the SQL query
+- The moment you call `.ToList()` or `foreach`, the SQL is sent to the database
+- If you accidentally cast to `IEnumerable<T>` first, all filtering happens in C# memory on the full table — very inefficient for large tables
+
 ```csharp
 // WHERE + OrderBy
 var itEmployees = await _context.Employees
@@ -259,6 +287,25 @@ var totalCount = await _context.Employees.CountAsync();
 
 ## 4.8 EF Core Migrations
 
+**What are migrations?**
+Migrations are the mechanism EF Core uses to **keep your database schema in sync with your C# entity classes**. Every time you change an entity (add a property, rename a column, add a new entity), you create a migration. The migration is a C# class with two methods:
+- `Up()` — applies the schema change (run with `database update`)
+- `Down()` — reverses the change (used for rollback)
+
+**Why migrations over manual SQL scripts?**
+- **Version controlled** — migration files live in your git repo alongside code
+- **Team-friendly** — each developer runs `database update` to apply everyone's migrations
+- **Repeatable** — you can recreate the database from scratch at any point by running all migrations
+- **Rollback support** — `database update PreviousMigrationName` rolls back to any point
+
+**The workflow:**
+1. Change your entity class
+2. `dotnet ef migrations add DescriptiveName` — generates the migration C# file
+3. Review the generated `Up()` and `Down()` methods
+4. `dotnet ef database update` — applies it to the database
+
+**Interview Answer:** "Migrations are version-controlled schema changes for your database. Each migration has `Up()` to apply a change and `Down()` to reverse it. They're committed to git alongside code, so the team always knows what schema changes were made and can apply them in order. This replaces manually written SQL DDL scripts."
+
 ```bash
 # Add a migration (generates code to update DB schema)
 dotnet ef migrations add AddSalaryColumn
@@ -280,11 +327,22 @@ protected override void Up(MigrationBuilder migrationBuilder)
 
 ## 4.9 Data Loading Strategies
 
-| Strategy             | How It Works                                     | When to Use                       |
-| -------------------- | ------------------------------------------------ | --------------------------------- |
-| **Eager Loading**    | Loads related data immediately with `.Include()` | You know you'll need related data |
-| **Lazy Loading**     | Loads related data on first access (auto)        | Careful — can cause N+1 problem   |
-| **Explicit Loading** | Manually load related data with `.Load()`        | You decide when to load           |
+**The problem:**
+When you load an entity (e.g., an `Employee`), EF Core doesn't automatically load related entities (e.g., the `Department` they belong to). You have three strategies to control when and how related data is loaded.
+
+**Why does this matter?**
+Choosing the wrong strategy is a very common source of performance problems — especially the **N+1 problem** with lazy loading.
+
+**The N+1 problem explained:**
+If you load 100 employees with lazy loading and then access `employee.Department.Name` in a loop — EF Core fires 1 query to get employees, then 1 separate query per employee to load their department = **101 queries**. With eager loading (`.Include()`), it's just 1 query using a SQL JOIN.
+
+| Strategy | How It Works | SQL Generated | Best For |
+|---|---|---|---|
+| **Eager Loading** | `.Include()` — loads related data **in the same query** | JOIN | When you know you'll need related data — avoids N+1 |
+| **Lazy Loading** | Related data loaded **automatically on first access** (via proxy) | Separate query per access | Simple cases — dangerous in loops (N+1 problem) |
+| **Explicit Loading** | You **manually trigger** loading with `.Load()` when ready | Separate query, your choice | When you sometimes need related data, sometimes don't |
+
+**Interview Answer:** "Eager loading uses `.Include()` to load related data in a single SQL JOIN query — best when you know you'll need the related data. Lazy loading loads related data automatically the first time you access the navigation property, but this causes the N+1 problem in loops. Explicit loading is a manual call to load related data exactly when you need it."
 
 ```csharp
 // Eager Loading

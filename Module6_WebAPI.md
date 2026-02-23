@@ -104,7 +104,32 @@ app.Run();
 
 ## 6.5 Creating Controllers and Actions
 
-### Basic API Controller
+**What is a controller?**
+A controller is a class that **groups related API endpoints**. Each public method in a controller is an **action** — it handles one specific HTTP request. The controller inherits from `ControllerBase` (not `Controller`, which is for MVC with Views).
+
+**`ControllerBase` vs `Controller`:**
+- `ControllerBase` — for APIs. Has all HTTP response helpers (`Ok()`, `NotFound()`, `BadRequest()`, etc.) but no View-related methods
+- `Controller` — for MVC. Inherits from `ControllerBase` and adds `View()`, `PartialView()`, `ViewBag`, etc.
+- **Always use `ControllerBase` for Web APIs** — `Controller` would add unnecessary View overhead
+
+**What does `[ApiController]` do?**
+Four automatic behaviours:
+1. **Automatic model validation** — returns 400 Bad Request automatically if `ModelState.IsValid == false`, without you checking it manually
+2. **Binding source inference** — automatically figures out where to bind parameters from (body, route, query) without you needing `[FromBody]`, `[FromRoute]` etc.
+3. **Problem Details** — returns standardized RFC 7807 JSON error responses
+4. **Attribute routing required** — forces you to use `[Route]` / `[HttpGet]` etc.
+
+**HTTP Verb to Status Code convention:**
+
+| HTTP Verb | Action | Success Code | Method to return |
+|---|---|---|---|
+| GET | Read one/all | 200 OK | `Ok(data)` |
+| POST | Create | 201 Created | `CreatedAtAction(...)` |
+| PUT | Full update | 204 No Content | `NoContent()` |
+| PATCH | Partial update | 204 No Content | `NoContent()` |
+| DELETE | Delete | 204 No Content | `NoContent()` |
+
+**Interview Answer:** "`ControllerBase` is for APIs — no View support. `[ApiController]` enables automatic 400 responses when model validation fails, infers binding sources, and enforces attribute routing. Web API actions return `IActionResult` or `ActionResult<T>` — the specific type allows Swagger to generate accurate documentation."
 
 ```csharp
 [ApiController]                    // Enables model binding, automatic 400 responses
@@ -272,6 +297,19 @@ public class EmployeeDto
 
 ## 6.8 Global Exception Handling
 
+**Why global exception handling?**
+Without it, every controller action needs its own `try/catch` block. That's dozens of duplicate blocks, inconsistent error responses, and easy to forget. With a global exception middleware, errors are caught in **one place**, logged uniformly, and a consistent JSON error response is returned.
+
+**The strategy:**
+1. Let exceptions propagate naturally (no try/catch in controllers)
+2. A global middleware wraps the entire pipeline in a try/catch
+3. It logs the exception with context
+4. It maps exception types to HTTP status codes (404 for NotFound, 400 for Validation, 500 for unexpected)
+5. Returns a standardized JSON error body every time
+
+**Why use custom exception classes?**
+`NotFoundException`, `ValidationException` etc. let you express intent — when you `throw new NotFoundException(...)` in your service layer, the global handler knows exactly which status code to return without any if/else in the business logic.
+
 > Instead of wrapping every action in try/catch, use a **global exception handler** so errors are caught in one place.
 
 ```csharp
@@ -420,6 +458,48 @@ _logger.LogCritical("App is going down: {Message}", ex.Message);
 ---
 
 ## 6.10 JWT Authentication and Authorization
+
+**What is JWT?**
+JWT (JSON Web Token) is a compact, self-contained token format used for authentication. After login, the server gives the client a token. The client sends this token in every subsequent request. The server **verifies the token** without hitting the database — all the information needed is inside the token itself.
+
+**JWT structure — 3 parts separated by dots:**
+- **Header** — Base64-encoded JSON: the algorithm used (`HS256`)
+- **Payload** — Base64-encoded JSON: the claims (user ID, roles, expiry)
+- **Signature** — HMAC of `header.payload` using the secret key — proves the token wasn't tampered with
+
+**Why JWT for APIs?**
+APIs are **stateless** — the server doesn't store session data. JWT solves this because the token carries all the identity information. The server just validates the signature using the secret key.
+
+**Authentication vs Authorization:**
+- **Authentication** = Who are you? (login → token)
+- **Authorization** = What are you allowed to do? (role check → allow/deny)
+- In ASP.NET Core: `UseAuthentication()` must come **before** `UseAuthorization()` in the pipeline
+
+**The full JWT flow:**
+```
+1. Client → POST /api/auth/login  { username, password }
+2. Server validates credentials against DB
+3. Server creates JWT with claims (name, role, expiry), signs with secret key → returns token
+4. Client stores token (memory/localStorage)
+5. Client → GET /api/employees  Authorization: Bearer <token>
+6. ASP.NET Core JwtBearer middleware validates: signature ✅, not expired ✅, issuer ✅
+7. Claims are populated into HttpContext.User
+8. [Authorize] / [Authorize(Roles = "Admin")] checks pass or return 401/403
+```
+
+**Common JWT claims:**
+- `sub` — Subject (user ID)
+- `name` — Username
+- `role` — User role(s)
+- `jti` — JWT ID (unique token identifier, used for refresh token revocation)
+- `exp` — Expiration timestamp
+- `iss` — Issuer (who created the token)
+- `aud` — Audience (who the token is intended for)
+
+**Refresh token pattern:**
+Access tokens are short-lived (15–60 min). A refresh token is long-lived (days/weeks) and stored securely. When the access token expires, the client uses the refresh token to get a new access token without re-login.
+
+**Interview Answer:** "JWT is a self-contained token — the payload carries claims like username and role, and the signature proves it wasn't tampered with. The server never needs to look up a session in the database — it just validates the signature. Access tokens are short-lived; refresh tokens allow getting new access tokens without re-login."
 
 ```bash
 dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer

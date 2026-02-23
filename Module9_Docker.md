@@ -6,14 +6,25 @@
 
 ## 9.1 What is Docker?
 
+**The core problem:**
+Software has dependencies — specific runtime versions, specific OS libraries, specific environment variables. When you develop on your machine and deploy to a server, these can differ, causing "it works on my machine" failures.
+
+**What Docker does:**
+Docker packages your application together with **everything it needs to run** — the runtime, libraries, config — into a single unit called a **container**. This container runs identically on any machine that has Docker installed.
+
+**Key concepts:**
+- **Image** — A read-only blueprint/template. Like a class in OOP. Built from a `Dockerfile`. Stored in a registry (Docker Hub, Azure Container Registry).
+- **Container** — A running instance of an image. Like an object instantiated from a class. Isolated process on the host OS.
+- **Dockerfile** — A text file with instructions to build an image (FROM, COPY, RUN, ENTRYPOINT).
+- **Docker Hub** — The public registry where images are stored and shared (like npm for containers).
+- **Registry** — A store for Docker images. Public = Docker Hub. Private = Azure Container Registry (ACR), AWS ECR.
+
+**Why containers changed software deployment:**
+Before Docker, deploying meant: install the right runtime version, configure environment variables, install dependencies — all manually, differently on each server. Docker wraps all of that and ships it as one artifact. Deploy the same image to dev, staging, and production — guaranteed identical behavior.
+
 > **Docker** is a platform that packages an application and all its dependencies into a **container** — a lightweight, portable, self-contained unit that runs consistently anywhere.
 
-**The Problem Docker Solves:**
-
-```
-Dev says: "It works on my machine!"
-Docker says: "Ship your machine."
-```
+**Interview Answer:** "Docker solves the 'works on my machine' problem. It packages the app with all its dependencies into a container — the same container runs identically on dev, staging, and prod. An image is the blueprint; a container is a running instance of that image."
 
 ```
 Without Docker:
@@ -215,7 +226,20 @@ obj/
 
 ## 9.7 Docker Compose
 
-### What is Docker Compose?
+**What is Docker Compose?**
+Real applications need multiple services — a web API, a database, a cache, maybe a message broker. Docker Compose lets you define all of these in a **single YAML file** and start them all with one command.
+
+**Why Compose for development?**
+Without Compose, you'd run multiple `docker run` commands manually, passing dozens of environment variables and networking flags, in the right order. One wrong flag and services can't talk to each other. Compose automates and versions all of this.
+
+**Key concepts:**
+- **service** — each container (api, sqlserver, redis) is a service
+- **depends_on** — controls startup order (start DB before the API)
+- **volumes** — persist data outside the container (so DB data survives container restarts)
+- **environment** — set environment variables (connection strings, API keys)
+- **networks** — services on the same Compose network can reach each other by service name (e.g., `sqlserver` resolves to the SQL Server container's IP automatically)
+
+**Interview Answer:** "Docker Compose orchestrates multiple containers for local development. You define all services, their images, ports, environment variables, and dependencies in a YAML file. `docker-compose up` starts everything; `docker-compose down` tears it all down. In production, Kubernetes replaces Compose for orchestration."
 
 > **Docker Compose** lets you define and run **multi-container applications** with a single `docker-compose.yml` file. Perfect for local development.
 

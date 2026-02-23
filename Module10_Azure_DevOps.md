@@ -592,13 +592,27 @@ To Do → In Progress → In Review → Done
 
 ## 10.12 Azure Pipelines — CI/CD
 
-### What is CI/CD?
+**What is CI/CD?**
+CI/CD is the practice of automating the build, test, and deployment process so that code changes go from a developer's commit to running in production reliably and quickly, without manual steps.
 
-| Term   | Full Form              | Meaning                                    |
-| ------ | ---------------------- | ------------------------------------------ |
-| **CI** | Continuous Integration | Auto-build and test on every commit        |
-| **CD** | Continuous Delivery    | Auto-deploy to staging on every merge      |
-| **CD** | Continuous Deployment  | Auto-deploy to production (no manual step) |
+- **CI (Continuous Integration)** — Every time code is pushed, an automated pipeline runs: restore packages → build → run tests. Catches broken code immediately before it affects the team.
+- **CD (Continuous Delivery)** — After CI passes, the pipeline automatically deploys to a staging/QA environment. A human approves the final push to production.
+- **CD (Continuous Deployment)** — Fully automated end-to-end, including production deployment. No human gate.
+
+**Why CI/CD?**
+Without it, deployments are manual, error-prone, and happen infrequently (leading to big scary releases). With CI/CD, deployments are small, automated, and frequent — catching issues early when they're cheap to fix.
+
+**Azure Pipelines** is Azure DevOps's CI/CD service. You define the pipeline as a YAML file (`azure-pipelines.yml`) committed alongside your code. This means your pipeline is version-controlled, reviewed in PRs, and changes are tracked.
+
+**Stages:** A pipeline is split into stages (Build, Test, Deploy to staging, Deploy to prod). Each stage can have approval gates — a human must approve before the next stage runs.
+
+**Interview Answer:** "CI/CD automates the build-test-deploy cycle. With Azure Pipelines, every commit triggers a YAML pipeline: restore → build → test. If all pass, it deploys to staging automatically. Production deployment can require a manual approval gate. This replaces slow, risky manual deployments with fast, reliable automated ones."
+
+| Term | Full Form | Meaning |
+|---|---|---|
+| **CI** | Continuous Integration | Auto-build and test on every commit |
+| **CD** | Continuous Delivery | Auto-deploy to staging; human approves prod |
+| **CD** | Continuous Deployment | Auto-deploy to production (no manual step) |
 
 ### YAML Pipeline (azure-pipelines.yml)
 
