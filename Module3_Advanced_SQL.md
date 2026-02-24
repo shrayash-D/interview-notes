@@ -1,129 +1,1113 @@
-# 📌 MODULE 3: ADVANCED SQL USING SQL SERVER
+# 📌 MODULE 3: SQL for Interviews
+
+> **Goal:** Complete SQL coverage from basics to advanced — theory-first, interview-ready definitions, and common scenarios. Every topic you need to crack SQL interview rounds.
 
 ---
 
-## 3.1 Getting Started
+## 1. Basics of SQL
 
-### What is SQL Server?
+### ❓ What is SQL?
 
-> **SQL Server** is a **Relational Database Management System (RDBMS)** by Microsoft used to store, retrieve, and manage data.
+**SQL (Structured Query Language)** is the standard language for managing and querying **relational databases**. It lets you create, read, update, and delete data, as well as define database structure.
 
-**Interview Answer:** "SQL Server is Microsoft's enterprise RDBMS that supports T-SQL for querying data. It provides tools for data storage, security, reporting, and integration services."
-
-### SQL Server Editions
-
-| Edition        | Use Case                                  |
-| -------------- | ----------------------------------------- |
-| **Enterprise** | Full features, large-scale production     |
-| **Standard**   | Mid-level, limited features vs Enterprise |
-| **Express**    | Free, lightweight, max 10GB database      |
-| **Developer**  | Free, full features, for dev/testing only |
-
-### Key Components
-
-| Component                               | What It Does                                 |
-| --------------------------------------- | -------------------------------------------- |
-| **Database Engine**                     | Core service for storing and processing data |
-| **SSMS (SQL Server Management Studio)** | GUI tool to manage SQL Server                |
-| **SSIS (Integration Services)**         | ETL tool — Extract, Transform, Load data     |
-| **SSRS (Reporting Services)**           | Build and manage reports                     |
-| **SSAS (Analysis Services)**            | Data analysis and mining                     |
-
-### SQL Server Instance
-
-> An **instance** is an independent installation of SQL Server. One machine can have **multiple instances** (default + named instances).
+**Interview Answer:** _"SQL is the standard language for interacting with relational databases. It's used to query data, define schema, control access, and manage transactions."_
 
 ---
 
-## 3.1a Primary Key vs Unique Key
+### SQL vs NoSQL
 
-> Both enforce uniqueness on a column — but with important differences.
+| Aspect             | SQL (Relational)                         | NoSQL (Non-Relational)                    |
+| ------------------ | ---------------------------------------- | ----------------------------------------- |
+| **Schema**         | Fixed schema, predefined tables/columns  | Flexible schema, documents/key-value      |
+| **Data Model**     | Tables with rows and columns             | Documents, key-value, graph, columnar     |
+| **Scalability**    | Vertical (add more CPU/RAM)              | Horizontal (add more servers)             |
+| **Transactions**   | ACID guaranteed                          | Eventual consistency (BASE model)         |
+| **Query Language** | SQL (standardized)                       | Varies (MongoDB queries, Cassandra CQL)   |
+| **Use Case**       | Structured data, transactions, reporting | Unstructured data, high-volume, real-time |
+| **Examples**       | MySQL, PostgreSQL, SQL Server, Oracle    | MongoDB, Cassandra, Redis, DynamoDB       |
 
-| Aspect              | **Primary Key**               | **Unique Key**                         |
-| ------------------- | ----------------------------- | -------------------------------------- |
-| NULL allowed?       | ❌ Never (NOT NULL enforced)  | ✅ One NULL allowed per column         |
-| Per table           | Only **1** primary key        | **Multiple** unique keys allowed       |
-| Index created       | Clustered index (by default)  | Non-clustered index (by default)       |
-| FK reference target | ✅ FKs typically reference PK | ✅ FK can also reference a Unique Key  |
-| Purpose             | Uniquely identifies every row | Enforces uniqueness for alternate keys |
+**Interview Answer:** _"SQL databases are relational with fixed schemas and ACID transactions — great for structured data. NoSQL databases have flexible schemas and scale horizontally — better for unstructured data and massive scale."_
+
+---
+
+### Types of SQL Commands
+
+| Type    | Full Form                    | Purpose                          | Commands                              |
+| ------- | ---------------------------- | -------------------------------- | ------------------------------------- |
+| **DDL** | Data Definition Language     | Define/modify database structure | `CREATE`, `ALTER`, `DROP`, `TRUNCATE` |
+| **DML** | Data Manipulation Language   | Modify data in tables            | `INSERT`, `UPDATE`, `DELETE`          |
+| **DQL** | Data Query Language          | Retrieve data                    | `SELECT`                              |
+| **DCL** | Data Control Language        | Control access permissions       | `GRANT`, `REVOKE`                     |
+| **TCL** | Transaction Control Language | Manage transactions              | `COMMIT`, `ROLLBACK`, `SAVEPOINT`     |
+
+```sql
+-- DDL
+CREATE TABLE Employees (Id INT PRIMARY KEY, Name VARCHAR(100));
+ALTER TABLE Employees ADD Email VARCHAR(100);
+DROP TABLE Employees;
+TRUNCATE TABLE Employees;  -- Deletes all rows, can't rollback
+
+-- DML
+INSERT INTO Employees VALUES (1, 'John', 'john@example.com');
+UPDATE Employees SET Email = 'newemail@example.com' WHERE Id = 1;
+DELETE FROM Employees WHERE Id = 1;
+
+-- DQL
+SELECT * FROM Employees;
+
+-- DCL
+GRANT SELECT ON Employees TO User1;
+REVOKE SELECT ON Employees FROM User1;
+
+-- TCL
+BEGIN TRANSACTION;
+  UPDATE Accounts SET Balance = Balance - 100 WHERE Id = 1;
+  SAVEPOINT sp1;
+  UPDATE Accounts SET Balance = Balance + 100 WHERE Id = 2;
+ROLLBACK TO sp1;  -- Undo only second update
+COMMIT;
+```
+
+**Interview Tip:** _"DELETE is DML (can rollback), TRUNCATE is DDL (faster, can't rollback)."_
+
+---
+
+## 2. SQL Queries
+
+### SELECT Statement
+
+```sql
+SELECT * FROM Employees;                        -- All columns
+SELECT Name, Salary FROM Employees;             -- Specific columns
+SELECT Name AS EmployeeName FROM Employees;     -- Column alias
+SELECT 'Salary:', Salary FROM Employees;        -- With literal
+```
+
+---
+
+### WHERE Clause
+
+```sql
+SELECT * FROM Employees WHERE Salary > 50000;
+SELECT * FROM Employees WHERE Department = 'IT' AND Salary > 60000;
+SELECT * FROM Employees WHERE Department = 'IT' OR Department = 'HR';
+```
+
+---
+
+### DISTINCT
+
+> Removes duplicate rows from the result.
+
+```sql
+SELECT DISTINCT Department FROM Employees;
+```
+
+---
+
+### ORDER BY
+
+```sql
+SELECT * FROM Employees ORDER BY Salary DESC;           -- Descending
+SELECT * FROM Employees ORDER BY Department, Salary;    -- Multi-column
+```
+
+---
+
+### LIMIT / TOP
+
+```sql
+-- SQL Server
+SELECT TOP 10 * FROM Employees ORDER BY Salary DESC;
+
+-- MySQL / PostgreSQL
+SELECT * FROM Employees ORDER BY Salary DESC LIMIT 10;
+
+-- SQL Server (modern syntax)
+SELECT * FROM Employees ORDER BY Salary DESC OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;
+```
+
+---
+
+### BETWEEN / IN / LIKE
+
+```sql
+-- BETWEEN
+SELECT * FROM Employees WHERE Salary BETWEEN 50000 AND 80000;
+
+-- IN
+SELECT * FROM Employees WHERE Department IN ('IT', 'HR', 'Sales');
+
+-- LIKE (wildcards: % = any characters, _ = single character)
+SELECT * FROM Employees WHERE Name LIKE 'J%';        -- Starts with J
+SELECT * FROM Employees WHERE Email LIKE '%@gmail.com';  -- Ends with @gmail.com
+SELECT * FROM Employees WHERE Name LIKE '_o%';       -- Second character is 'o'
+```
+
+---
+
+### NULL Handling
+
+> **NULL** means "unknown" or "missing value" — it is **NOT** the same as empty string `''` or zero `0`.
+
+```sql
+-- Check for NULL
+SELECT * FROM Employees WHERE ManagerId IS NULL;
+SELECT * FROM Employees WHERE ManagerId IS NOT NULL;
+
+-- NULL in comparisons
+SELECT * FROM Employees WHERE Salary = NULL;   -- ❌ Wrong — always false
+SELECT * FROM Employees WHERE Salary IS NULL;  -- ✅ Correct
+
+-- COALESCE (return first non-NULL value)
+SELECT Name, COALESCE(ManagerId, 0) AS ManagerId FROM Employees;
+
+-- ISNULL / IFNULL (SQL Server / MySQL)
+SELECT Name, ISNULL(ManagerId, 0) AS ManagerId FROM Employees;
+```
+
+**Interview Answer:** _"NULL represents a missing or unknown value. Use `IS NULL` / `IS NOT NULL` to check for NULLs — regular comparison operators like `=` don't work with NULL."_
+
+---
+
+## 3. Joins
+
+> A **JOIN** combines rows from two or more tables based on a related column.
+
+### JOIN Types
+
+| JOIN Type           | What it returns                                                |
+| ------------------- | -------------------------------------------------------------- |
+| **INNER JOIN**      | Only matching rows from both tables                            |
+| **LEFT JOIN**       | All rows from left table + matching rows from right            |
+| **RIGHT JOIN**      | All rows from right table + matching rows from left            |
+| **FULL OUTER JOIN** | All rows from both tables, with NULLs where no match           |
+| **CROSS JOIN**      | Cartesian product — every row from left × every row from right |
+| **SELF JOIN**       | Join table to itself (e.g., employee-manager hierarchy)        |
+
+---
+
+### INNER JOIN
+
+> Returns only rows where there is a match in both tables.
+
+```sql
+SELECT e.Name, d.DepartmentName
+FROM Employees e
+INNER JOIN Departments d ON e.DepartmentId = d.DepartmentId;
+```
+
+**Interview Scenario:** _"Get all employees with their department names — exclude employees without a department."_
+
+---
+
+### LEFT JOIN (LEFT OUTER JOIN)
+
+> Returns all rows from the **left** table, and matching rows from the right. If no match, NULL for right table columns.
+
+```sql
+SELECT e.Name, d.DepartmentName
+FROM Employees e
+LEFT JOIN Departments d ON e.DepartmentId = d.DepartmentId;
+```
+
+**Interview Scenario:** _"Get all employees, including those not assigned to any department (show NULL for department)."_
+
+---
+
+### RIGHT JOIN (RIGHT OUTER JOIN)
+
+> Returns all rows from the **right** table, and matching rows from the left. If no match, NULL for left table columns.
+
+```sql
+SELECT e.Name, d.DepartmentName
+FROM Employees e
+RIGHT JOIN Departments d ON e.DepartmentId = d.DepartmentId;
+```
+
+**Interview Scenario:** _"Get all departments, including those with no employees."_
+
+---
+
+### FULL OUTER JOIN
+
+> Returns all rows from both tables. If no match, NULL for the missing side.
+
+```sql
+SELECT e.Name, d.DepartmentName
+FROM Employees e
+FULL OUTER JOIN Departments d ON e.DepartmentId = d.DepartmentId;
+```
+
+**Interview Scenario:** _"Get all employees and all departments — show employees without departments AND departments without employees."_
+
+---
+
+### CROSS JOIN
+
+> Cartesian product — every row from left table paired with every row from right table.
+
+```sql
+SELECT e.Name, d.DepartmentName
+FROM Employees e
+CROSS JOIN Departments d;
+-- If Employees has 10 rows, Departments has 5 → result has 50 rows
+```
+
+**Interview Scenario:** _"Generate all possible combinations (e.g., every product in every store)."_
+
+---
+
+### SELF JOIN
+
+> Join a table to itself — useful for hierarchical data.
+
+```sql
+-- Get each employee and their manager's name
+SELECT e.Name AS Employee, m.Name AS Manager
+FROM Employees e
+LEFT JOIN Employees m ON e.ManagerId = m.EmployeeId;
+```
+
+**Interview Scenario:** _"Show employee hierarchy: who reports to whom?"_
+
+---
+
+### JOIN Interview Scenarios
+
+| Scenario                                                 | JOIN Type       |
+| -------------------------------------------------------- | --------------- |
+| All customers who placed orders                          | INNER JOIN      |
+| All customers, including those who never ordered         | LEFT JOIN       |
+| All orders, including those without customer info (rare) | RIGHT JOIN      |
+| All employees and all departments (even orphans)         | FULL OUTER JOIN |
+| Employee-Manager pairs (hierarchy)                       | SELF JOIN       |
+| Every product × every store combination                  | CROSS JOIN      |
+
+---
+
+## 4. Aggregate Functions
+
+> Aggregate functions **compute a single result** from multiple rows.
+
+| Function        | What it does                         |
+| --------------- | ------------------------------------ |
+| `COUNT(*)`      | Count total rows                     |
+| `COUNT(column)` | Count non-NULL values in that column |
+| `SUM(column)`   | Sum of numeric values                |
+| `AVG(column)`   | Average of numeric values            |
+| `MAX(column)`   | Maximum value                        |
+| `MIN(column)`   | Minimum value                        |
+
+```sql
+SELECT COUNT(*) FROM Employees;                       -- Total employees
+SELECT COUNT(ManagerId) FROM Employees;               -- Employees with a manager
+SELECT SUM(Salary) FROM Employees;                    -- Total salary bill
+SELECT AVG(Salary) FROM Employees;                    -- Average salary
+SELECT MAX(Salary), MIN(Salary) FROM Employees;       -- Highest and lowest
+```
+
+---
+
+### GROUP BY
+
+> Groups rows that have the same value in specified column(s), then applies aggregate functions to each group.
+
+```sql
+-- Count employees per department
+SELECT Department, COUNT(*) AS EmployeeCount
+FROM Employees
+GROUP BY Department;
+
+-- Average salary per department
+SELECT Department, AVG(Salary) AS AvgSalary
+FROM Employees
+GROUP BY Department;
+```
+
+**Rule:** Every column in `SELECT` must either be in `GROUP BY` or inside an aggregate function.
+
+---
+
+### HAVING
+
+> Filters groups **after** aggregation (like `WHERE` but for groups).
+
+```sql
+-- Departments with more than 5 employees
+SELECT Department, COUNT(*) AS EmployeeCount
+FROM Employees
+GROUP BY Department
+HAVING COUNT(*) > 5;
+
+-- Departments where average salary > 70000
+SELECT Department, AVG(Salary) AS AvgSalary
+FROM Employees
+GROUP BY Department
+HAVING AVG(Salary) > 70000;
+```
+
+**WHERE vs HAVING:**
+
+- `WHERE` filters **rows before** grouping
+- `HAVING` filters **groups after** aggregation
+
+```sql
+-- Correct order:
+SELECT Department, COUNT(*)
+FROM Employees
+WHERE Salary > 50000        -- Filter rows first
+GROUP BY Department
+HAVING COUNT(*) > 3;        -- Filter groups after
+```
+
+---
+
+### Real-World Interview Problems
+
+**1. Count employees by department**
+
+```sql
+SELECT Department, COUNT(*) AS EmployeeCount
+FROM Employees
+GROUP BY Department;
+```
+
+**2. Department with highest total salary**
+
+```sql
+SELECT TOP 1 Department, SUM(Salary) AS TotalSalary
+FROM Employees
+GROUP BY Department
+ORDER BY TotalSalary DESC;
+```
+
+**3. Average salary per department, only depts with avg > 60k**
+
+```sql
+SELECT Department, AVG(Salary) AS AvgSalary
+FROM Employees
+GROUP BY Department
+HAVING AVG(Salary) > 60000;
+```
+
+**4. Top 3 highest-paid employees**
+
+```sql
+SELECT TOP 3 Name, Salary
+FROM Employees
+ORDER BY Salary DESC;
+```
+
+---
+
+## 5. Subqueries
+
+> A **subquery** is a query nested inside another query. It runs first, then its result is used by the outer query.
+
+### Types by Return Value
+
+| Type             | Returns          | Used with          |
+| ---------------- | ---------------- | ------------------ |
+| **Single-row**   | One value        | `=`, `>`, `<`      |
+| **Multi-row**    | Multiple values  | `IN`, `ANY`, `ALL` |
+| **Multi-column** | Multiple columns | `IN`, `EXISTS`     |
+
+---
+
+### Single-Row Subquery
+
+```sql
+-- Employee with the highest salary
+SELECT Name, Salary
+FROM Employees
+WHERE Salary = (SELECT MAX(Salary) FROM Employees);
+```
+
+---
+
+### Multi-Row Subquery with IN
+
+```sql
+-- Employees in departments that have 'IT' or 'HR'
+SELECT Name
+FROM Employees
+WHERE DepartmentId IN (SELECT DepartmentId FROM Departments WHERE Name IN ('IT', 'HR'));
+```
+
+---
+
+### ANY, ALL
+
+```sql
+-- Salary greater than ANY salary in IT dept (greater than the minimum in IT)
+SELECT Name, Salary
+FROM Employees
+WHERE Salary > ANY (SELECT Salary FROM Employees WHERE Department = 'IT');
+
+-- Salary greater than ALL salaries in IT dept (greater than the maximum in IT)
+SELECT Name, Salary
+FROM Employees
+WHERE Salary > ALL (SELECT Salary FROM Employees WHERE Department = 'IT');
+```
+
+---
+
+### Correlated Subquery
+
+> A subquery that references columns from the outer query — runs once per row of the outer query.
+
+```sql
+-- Employees earning above their department's average
+SELECT e1.Name, e1.Salary, e1.Department
+FROM Employees e1
+WHERE e1.Salary > (
+    SELECT AVG(e2.Salary)
+    FROM Employees e2
+    WHERE e2.Department = e1.Department  -- ← Correlated: references outer query
+);
+```
+
+---
+
+### Subquery vs JOIN
+
+| Aspect          | Subquery                                           | JOIN                                   |
+| --------------- | -------------------------------------------------- | -------------------------------------- |
+| **Readability** | Can be easier for simple logic                     | Better for multiple tables             |
+| **Performance** | Can be slower (runs multiple times for correlated) | Usually faster                         |
+| **Use case**    | Filtering based on aggregated/computed value       | Combining columns from multiple tables |
+
+**When to use subqueries:** Filtering rows based on aggregate results (e.g., "salary > department average").
+
+**When to use JOINs:** Combining data from multiple tables into a result set.
+
+---
+
+## 6. Constraints
+
+> Constraints are **rules enforced on table columns** to maintain data integrity.
+
+| Constraint      | Purpose                                                                       |
+| --------------- | ----------------------------------------------------------------------------- |
+| **PRIMARY KEY** | Uniquely identifies each row; auto-creates clustered index; NOT NULL enforced |
+| **FOREIGN KEY** | Enforces referential integrity — links to a PK or Unique Key in another table |
+| **UNIQUE**      | Ensures all values in column(s) are unique; allows one NULL                   |
+| **NOT NULL**    | Column must have a value — cannot be NULL                                     |
+| **CHECK**       | Enforces a condition (e.g., `Salary > 0`)                                     |
+| **DEFAULT**     | Provides a default value if none is specified                                 |
 
 ```sql
 CREATE TABLE Employees (
-    EmployeeId  INT          PRIMARY KEY,           -- PK: not null, clustered, 1 per table
-    Email       VARCHAR(100) UNIQUE,                -- UK: allows 1 null, non-clustered
-    Phone       VARCHAR(20)  UNIQUE,                -- Multiple UKs allowed ✅
-    Name        VARCHAR(100) NOT NULL
+    EmployeeId   INT          PRIMARY KEY,              -- PK: unique, not null, clustered index
+    Name         VARCHAR(100) NOT NULL,                 -- Must have a value
+    Email        VARCHAR(100) UNIQUE,                   -- No duplicates (allows 1 NULL)
+    Salary       DECIMAL(10,2) CHECK (Salary > 0),      -- Must be positive
+    Department   VARCHAR(50)  DEFAULT 'Unassigned',     -- Default if not provided
+    ManagerId    INT,
+    FOREIGN KEY (ManagerId) REFERENCES Employees(EmployeeId)  -- FK: must exist in Employees.EmployeeId
 );
+```
 
+**Interview Answer:** _"Constraints enforce data integrity rules. Primary Key uniquely identifies rows, Foreign Key enforces relationships, Unique prevents duplicates, NOT NULL prevents missing values, CHECK enforces custom conditions, and DEFAULT provides fallback values."_
+
+---
+
+## 7. Keys & Relationships
+
+### Types of Keys
+
+| Key Type             | Definition                                                                                                                   |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Primary Key (PK)** | A column (or set of columns) that uniquely identifies each row. NOT NULL enforced. Only one PK per table.                    |
+| **Foreign Key (FK)** | A column that references a PK or Unique Key in another table — enforces referential integrity.                               |
+| **Unique Key**       | Enforces uniqueness but allows one NULL. Can have multiple per table.                                                        |
+| **Candidate Key**    | Any column (or set) that could serve as a PK — all are unique and not null. One is chosen as PK, rest become alternate keys. |
+| **Composite Key**    | A PK made of **multiple columns** combined (e.g., `OrderId + ProductId`).                                                    |
+| **Surrogate Key**    | An artificial key (often auto-increment integer) with no business meaning — just for uniqueness.                             |
+| **Natural Key**      | A real-world identifier (e.g., SSN, Email) used as PK — has business meaning.                                                |
+
+```sql
 -- Composite Primary Key
 CREATE TABLE OrderItems (
     OrderId    INT,
     ProductId  INT,
     Quantity   INT,
-    PRIMARY KEY (OrderId, ProductId)                -- Composite PK
+    PRIMARY KEY (OrderId, ProductId)  -- Composite PK
 );
 
--- A Foreign Key can reference a Unique Key too
-CREATE TABLE Invoices (
-    InvoiceId  INT PRIMARY KEY,
-    Email      VARCHAR(100) REFERENCES Employees(Email)  -- Referencing UK ✅
+-- Surrogate Key (auto-increment)
+CREATE TABLE Employees (
+    EmployeeId INT IDENTITY(1,1) PRIMARY KEY,  -- Surrogate key
+    Email      VARCHAR(100)
+);
+
+-- Foreign Key
+CREATE TABLE Orders (
+    OrderId     INT PRIMARY KEY,
+    EmployeeId  INT,
+    FOREIGN KEY (EmployeeId) REFERENCES Employees(EmployeeId)
 );
 ```
-
-**Interview Answer:** _"A Primary Key enforces uniqueness AND NOT NULL. Only one PK per table; it creates a clustered index. A Unique Key also enforces uniqueness but allows one NULL per column, and you can have multiple unique keys per table. Both can be referenced by foreign keys."_
 
 ---
 
-## 3.2 Advanced SQL Concepts
+### Referential Integrity
 
-### OVER() Clause — Window Functions
+> Ensures that FKs always point to valid PKs — can't have orphan records.
 
-**What is it?**
-The `OVER()` clause turns an aggregate function (like `SUM`, `AVG`, `COUNT`) into a **window function**. The key difference from `GROUP BY` is: window functions calculate across a set of rows but **do not collapse those rows** — every original row stays in the result with an extra calculated column added.
+**Actions on DELETE/UPDATE:**
 
-**In plain English:** `GROUP BY` squishes many rows into one summary row per group. `OVER()` keeps all original rows but adds a calculation column alongside each one.
-
-**Why use it?**
-Imagine you want each employee's salary AND the average salary of their department in the same row. With `GROUP BY` you can't do this — you'd either get just the average, or you'd need a self-join. `OVER()` makes it trivial.
+| Action                   | What happens to child rows when parent is deleted/updated |
+| ------------------------ | --------------------------------------------------------- |
+| **CASCADE**              | Automatically delete/update child rows                    |
+| **SET NULL**             | Set FK to NULL in child rows                              |
+| **SET DEFAULT**          | Set FK to default value                                   |
+| **NO ACTION / RESTRICT** | Prevent delete/update if children exist                   |
 
 ```sql
--- Get each employee's salary AND the average salary of their department
+CREATE TABLE Orders (
+    OrderId     INT PRIMARY KEY,
+    EmployeeId  INT,
+    FOREIGN KEY (EmployeeId) REFERENCES Employees(EmployeeId)
+        ON DELETE CASCADE     -- Delete orders when employee is deleted
+        ON UPDATE CASCADE     -- Update OrderId if EmployeeId changes
+);
+```
+
+---
+
+## 8. Normalization & Schema Design
+
+### What is Normalization?
+
+> **Normalization** is the process of organizing database schema to **reduce redundancy** and **improve data integrity**. Data is split into multiple related tables.
+
+**Why normalize?**
+
+- Eliminate duplicate data (saves storage)
+- Prevent update anomalies (one change doesn't require updating 10 rows)
+- Improve consistency
+
+---
+
+### Normal Forms
+
+| Form     | Rule                                                                                                          | Problem it solves                                              |
+| -------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **1NF**  | Each column contains atomic (indivisible) values; no repeating groups                                         | No arrays or comma-separated lists in a column                 |
+| **2NF**  | Must be in 1NF + all non-key columns depend on the **entire** PK (no partial dependency)                      | Composite PK: prevent columns depending on only part of the PK |
+| **3NF**  | Must be in 2NF + no transitive dependencies (non-key columns depend only on PK, not on other non-key columns) | Prevent indirect dependencies between non-key columns          |
+| **BCNF** | Stricter 3NF: every determinant must be a candidate key                                                       | Rare edge cases of 3NF that still have anomalies               |
+
+---
+
+### Example: Normalization Steps
+
+**Unnormalized (0NF):**
+
+```
+Orders Table:
+OrderId | CustomerName | CustomerEmail | Products                  | Quantities
+1       | John Doe     | john@ex.com   | Laptop, Mouse, Keyboard   | 1, 2, 1
+```
+
+❌ Problems: `Products` is comma-separated (not atomic), redundant customer data.
+
+---
+
+**1NF (Atomic values):**
+
+```
+Orders:
+OrderId | CustomerName | CustomerEmail | Product  | Quantity
+1       | John Doe     | john@ex.com   | Laptop   | 1
+1       | John Doe     | john@ex.com   | Mouse    | 2
+1       | John Doe     | john@ex.com   | Keyboard | 1
+```
+
+✅ Each column has atomic values.
+❌ Still redundant: `CustomerName` and `CustomerEmail` repeated for each product.
+
+---
+
+**2NF (No partial dependency):**
+
+```
+Orders:
+OrderId | CustomerName | CustomerEmail
+
+OrderItems:
+OrderId | Product  | Quantity
+```
+
+✅ Non-key columns (`Product`, `Quantity`) depend on the full composite PK `(OrderId, Product)`.
+❌ Still redundant: `CustomerName`, `CustomerEmail` depend on `CustomerName` (transitive).
+
+---
+
+**3NF (No transitive dependency):**
+
+```
+Customers:
+CustomerId | CustomerName | CustomerEmail
+
+Orders:
+OrderId | CustomerId
+
+OrderItems:
+OrderId | ProductId | Quantity
+
+Products:
+ProductId | ProductName
+```
+
+✅ All non-key columns depend only on the PK. No redundancy.
+
+---
+
+### Denormalization
+
+> **Denormalization** is intentionally adding redundancy to improve **read performance** at the cost of update complexity.
+
+**When to denormalize:**
+
+- Analytics/reporting databases (data warehouses)
+- Read-heavy systems where writes are rare
+- To avoid complex JOINs in frequently-run queries
+
+**Example:** Store `CustomerName` directly in `Orders` table to avoid JOINing `Customers` table every time.
+
+---
+
+### Fact Tables & Dimension Tables (Data Warehousing)
+
+| Type                | Purpose                                                 | Characteristics                                    |
+| ------------------- | ------------------------------------------------------- | -------------------------------------------------- |
+| **Fact Table**      | Stores measurable events (sales, transactions)          | Large, many rows, foreign keys to dimensions       |
+| **Dimension Table** | Stores descriptive attributes (customer, product, date) | Smaller, denormalized, used for filtering/grouping |
+
+**Star Schema:**
+
+```
+Fact_Sales (center)
+  ├── FK: CustomerId → Dim_Customer
+  ├── FK: ProductId → Dim_Product
+  └── FK: DateId → Dim_Date
+```
+
+---
+
+## 9. Indexes
+
+### ❓ What is an Index?
+
+An **index** is a separate data structure that SQL Server maintains to speed up data retrieval. Without an index, SQL does a **full table scan** (reads every row). With an index, it can jump directly to matching rows.
+
+**Analogy:** Like an index in a book — instead of reading every page to find "recursion", you look in the index and go to page 245.
+
+**Trade-off:**
+
+- ✅ Faster `SELECT` (reads)
+- ❌ Slower `INSERT`, `UPDATE`, `DELETE` (writes) — index must be updated too
+
+**Interview Answer:** _"An index speeds up queries by allowing the database to locate rows without scanning the whole table. The trade-off is slower writes because indexes must be updated. Clustered indexes physically sort the table; non-clustered indexes are separate structures."_
+
+---
+
+### Clustered Index
+
+> Physically **sorts and stores the table data** in index order. The table **IS** the clustered index.
+
+- Only **1** per table (can only sort data one way)
+- Primary Key automatically creates a clustered index
+
+**Analogy:** A phone book sorted by last name — the data is physically organized.
+
+```sql
+CREATE CLUSTERED INDEX IX_Employee_Id ON Employees(EmployeeId);
+```
+
+---
+
+### Non-Clustered Index
+
+> A **separate structure** with index key + pointer to the actual row. Table data is not reordered.
+
+- **Multiple** allowed per table
+- Like an index in a textbook — doesn't change page order, just tells you where to look
+
+```sql
+CREATE NONCLUSTERED INDEX IX_Employee_Name ON Employees(Name);
+```
+
+---
+
+### Covering Index
+
+> A non-clustered index that **includes all columns** a query needs — the query can be fully satisfied from the index without going to the table.
+
+```sql
+CREATE NONCLUSTERED INDEX IX_Emp_Cover
+ON Employees(Department)
+INCLUDE (Name, Salary);  -- Includes extra columns
+
+-- This query uses only the index:
+SELECT Name, Salary FROM Employees WHERE Department = 'IT';
+```
+
+---
+
+### Unique Index
+
+> Enforces uniqueness on the indexed column(s).
+
+```sql
+CREATE UNIQUE INDEX IX_Employee_Email ON Employees(Email);
+```
+
+---
+
+### Filtered Index
+
+> An index on a **subset of rows** (with a `WHERE` clause) — smaller and more efficient.
+
+```sql
+CREATE NONCLUSTERED INDEX IX_Active_Employees
+ON Employees(Name)
+WHERE IsActive = 1;  -- Only indexes active employees
+```
+
+---
+
+### Index Scan vs Index Seek
+
+| Type           | What it does                      | Performance                 |
+| -------------- | --------------------------------- | --------------------------- |
+| **Index Scan** | Reads the entire index (or table) | Slow (like full table scan) |
+| **Index Seek** | Jumps directly to matching rows   | Fast                        |
+
+**Interview Tip:** You want **Index Seek** in your execution plan, not **Index Scan**.
+
+---
+
+### When NOT to Use Indexes
+
+| Scenario                                                             | Why                                           |
+| -------------------------------------------------------------------- | --------------------------------------------- |
+| Small tables (< 1000 rows)                                           | Full scan is already fast                     |
+| Columns with very few unique values (e.g., `IsActive` with only 0/1) | Index doesn't help — scans most rows anyway   |
+| Heavy INSERT/UPDATE/DELETE workload                                  | Index maintenance overhead outweighs benefits |
+| Columns rarely used in WHERE, JOIN, ORDER BY                         | No query benefit                              |
+
+---
+
+## 10. Views
+
+### ❓ What is a View?
+
+A **view** is a **virtual table** based on a `SELECT` query. It doesn't store data itself — it dynamically pulls data from underlying tables when queried.
+
+**Why use views?**
+
+- **Security** — Hide sensitive columns, expose only needed data
+- **Simplify** — Encapsulate complex JOINs, users query a simple view
+- **Abstraction** — Change underlying tables without breaking application queries
+
+```sql
+-- Create view
+CREATE VIEW vw_ActiveEmployees AS
+SELECT EmployeeId, Name, Department
+FROM Employees
+WHERE IsActive = 1;
+
+-- Query it like a table
+SELECT * FROM vw_ActiveEmployees;
+
+-- Modify view
+ALTER VIEW vw_ActiveEmployees AS
+SELECT EmployeeId, Name, Department, Salary
+FROM Employees WHERE IsActive = 1;
+
+-- Drop view
+DROP VIEW vw_ActiveEmployees;
+```
+
+---
+
+### Types of Views
+
+| Type                            | Description                                                          |
+| ------------------------------- | -------------------------------------------------------------------- |
+| **Simple View**                 | Based on one table, no aggregates/GROUP BY                           |
+| **Complex View**                | Joins, GROUP BY, aggregates                                          |
+| **Indexed (Materialized) View** | Physically stores result — faster reads, must manually refresh       |
+| **Updatable View**              | Can `INSERT`/`UPDATE`/`DELETE` through the view (restrictions apply) |
+
+---
+
+### Materialized Views
+
+> A view that **physically stores** the result. Must be manually refreshed when underlying data changes.
+
+```sql
+-- SQL Server: Indexed View
+CREATE VIEW vw_DeptSalary WITH SCHEMABINDING AS
+SELECT Department, SUM(Salary) AS TotalSalary, COUNT_BIG(*) AS EmployeeCount
+FROM dbo.Employees
+GROUP BY Department;
+
+CREATE UNIQUE CLUSTERED INDEX IX_DeptSalary ON vw_DeptSalary(Department);
+```
+
+---
+
+### Updatable vs Non-Updatable Views
+
+**Updatable View** (can `INSERT`/`UPDATE`/`DELETE`):
+
+- Single table
+- No `DISTINCT`, `GROUP BY`, `HAVING`, `UNION`
+- All `NOT NULL` columns included
+
+**Non-Updatable View:**
+
+- Contains `JOIN`, `GROUP BY`, calculated columns, subqueries
+- Read-only
+
+---
+
+## 11. Stored Procedures
+
+### ❓ What is a Stored Procedure?
+
+A **stored procedure (SP)** is a **pre-compiled block of SQL code** saved in the database that you execute by name. It's compiled and cached on first run — subsequent calls reuse the cached execution plan.
+
+**Why use SPs?**
+
+- **Performance** — Pre-compiled, execution plan cached
+- **Security** — Grant `EXECUTE` permission without exposing tables
+- **Reusability** — Write once, call from multiple apps
+- **Reduced network traffic** — One call vs multiple SQL statements
+- **Encapsulation** — Centralize business logic
+
+**Interview Answer:** _"A stored procedure is pre-compiled SQL code stored in the database. Benefits: cached execution plan (faster), security (users can execute SP without table access), reusability, and less network traffic."_
+
+---
+
+### Creating and Executing SPs
+
+```sql
+-- Create SP
+CREATE PROCEDURE usp_GetEmployeesByDept
+    @DeptName VARCHAR(50),
+    @MinSalary DECIMAL(10,2) = 0  -- Default parameter
+AS
+BEGIN
+    SELECT Name, Salary, Department
+    FROM Employees
+    WHERE Department = @DeptName AND Salary >= @MinSalary
+    ORDER BY Salary DESC;
+END;
+
+-- Execute
+EXEC usp_GetEmployeesByDept @DeptName = 'IT', @MinSalary = 50000;
+EXEC usp_GetEmployeesByDept 'IT', 50000;  -- Positional
+
+-- Modify
+ALTER PROCEDURE usp_GetEmployeesByDept ...
+
+-- Delete
+DROP PROCEDURE usp_GetEmployeesByDept;
+```
+
+---
+
+### Input and Output Parameters
+
+```sql
+-- SP with OUTPUT parameter
+CREATE PROCEDURE usp_GetEmpCount
+    @DeptName VARCHAR(50),
+    @EmpCount INT OUTPUT          -- Output parameter
+AS
+BEGIN
+    SELECT @EmpCount = COUNT(*) FROM Employees WHERE Department = @DeptName;
+END;
+
+-- Call with OUTPUT
+DECLARE @Count INT;
+EXEC usp_GetEmpCount @DeptName = 'IT', @EmpCount = @Count OUTPUT;
+PRINT @Count;
+```
+
+---
+
+### SP Use Cases
+
+| Use Case                   | Example                                          |
+| -------------------------- | ------------------------------------------------ |
+| **Complex business logic** | Multi-step calculations, conditional logic       |
+| **Logging**                | Insert audit records on every critical operation |
+| **Reports**                | Pre-defined queries for dashboards               |
+| **Batch processing**       | Nightly ETL jobs                                 |
+| **Transaction management** | BEGIN/COMMIT/ROLLBACK in one atomic SP           |
+
+---
+
+## 12. Functions
+
+### ❓ What is a User-Defined Function?
+
+A **function** always **returns a value** and can be used directly in SQL expressions like `SELECT` and `WHERE`. Unlike SPs, functions **cannot** perform `INSERT`/`UPDATE`/`DELETE`.
+
+---
+
+### Types of Functions
+
+| Type                                     | Returns                           | Use Case                                      |
+| ---------------------------------------- | --------------------------------- | --------------------------------------------- |
+| **Scalar Function**                      | Single value (one number, string) | Used in `SELECT`, `WHERE`                     |
+| **Inline Table-Valued (ITVF)**           | A table (single `SELECT`)         | Used in `FROM` like a table, best performance |
+| **Multi-Statement Table-Valued (MSTVF)** | A table (multiple statements)     | Complex logic, slower                         |
+
+---
+
+### Scalar Function
+
+```sql
+CREATE FUNCTION fn_GetFullName(@FirstName VARCHAR(50), @LastName VARCHAR(50))
+RETURNS VARCHAR(100)
+AS
+BEGIN
+    RETURN @FirstName + ' ' + @LastName;
+END;
+
+-- Use it
+SELECT dbo.fn_GetFullName('John', 'Doe');  -- "John Doe"
+SELECT Name, dbo.fn_GetFullName(FirstName, LastName) AS FullName FROM Employees;
+```
+
+---
+
+### Inline Table-Valued Function (ITVF)
+
+```sql
+CREATE FUNCTION fn_GetEmployeesByDept(@Dept VARCHAR(50))
+RETURNS TABLE
+AS
+RETURN (
+    SELECT Name, Salary FROM Employees WHERE Department = @Dept
+);
+
+-- Use it like a table
+SELECT * FROM fn_GetEmployeesByDept('IT');
+```
+
+---
+
+### Multi-Statement Table-Valued Function (MSTVF)
+
+```sql
+CREATE FUNCTION fn_GetTopEarners(@TopN INT)
+RETURNS @Result TABLE (Name VARCHAR(100), Salary DECIMAL(18,2))
+AS
+BEGIN
+    INSERT INTO @Result
+    SELECT TOP (@TopN) Name, Salary
+    FROM Employees
+    ORDER BY Salary DESC;
+
+    -- Can add more logic here
+    RETURN;
+END;
+
+SELECT * FROM fn_GetTopEarners(5);
+```
+
+---
+
+### Deterministic vs Non-Deterministic Functions
+
+| Type                  | Meaning                         | Examples                         |
+| --------------------- | ------------------------------- | -------------------------------- |
+| **Deterministic**     | Same input → always same output | `ABS()`, `LEN()`, `SUBSTRING()`  |
+| **Non-Deterministic** | Output can vary                 | `GETDATE()`, `RAND()`, `NEWID()` |
+
+**Interview Tip:** Indexed views and computed columns can only use deterministic functions.
+
+---
+
+### SP vs Function
+
+| Feature                    | Stored Procedure    | Function            |
+| -------------------------- | ------------------- | ------------------- |
+| Returns                    | Zero or many values | Must return a value |
+| Use in SELECT              | ❌ Cannot           | ✅ Can              |
+| DML (INSERT/UPDATE/DELETE) | ✅ Allowed          | ❌ Not allowed      |
+| Transactions               | ✅ Can use          | ❌ Cannot           |
+| Call another SP            | ✅ Can              | ❌ Cannot           |
+
+---
+
+## 13. Window Functions (Very Important!)
+
+### ❓ What are Window Functions?
+
+Window functions perform calculations **across a set of rows** related to the current row — but unlike `GROUP BY`, they **do not collapse rows**. Every original row stays in the result with an extra calculated column.
+
+**Key concept:** `OVER()` defines the "window" (set of rows) for the calculation.
+
+---
+
+### OVER()
+
+```sql
+-- Each employee's salary + average salary of their department
 SELECT Name, Department, Salary,
        AVG(Salary) OVER(PARTITION BY Department) AS DeptAvgSalary
 FROM Employees;
--- Each row keeps its individual data + gets the department average alongside it
+
+-- Running total of salaries
+SELECT Name, Salary,
+       SUM(Salary) OVER(ORDER BY EmployeeId) AS RunningTotal
+FROM Employees;
 ```
+
+---
 
 ### PARTITION BY
 
-**What is it?**
-`PARTITION BY` is used inside `OVER()` to divide rows into groups (partitions) for the window calculation. It works like `GROUP BY` for defining the scope of the window function, but again — rows are NOT collapsed.
+> Divides rows into groups for the window calculation — like `GROUP BY` but rows are not collapsed.
 
 ```sql
 SELECT Name, Department, Salary,
-       SUM(Salary) OVER(PARTITION BY Department) AS DeptTotal
+       RANK() OVER(PARTITION BY Department ORDER BY Salary DESC) AS RankInDept
 FROM Employees;
--- Each row shows individual salary + total department salary side-by-side
+-- Ranks employees within each department
 ```
 
-**Interview Answer:** "Window functions with `OVER()` perform calculations across a related set of rows without collapsing them. `PARTITION BY` defines the grouping scope. Unlike `GROUP BY`, you keep all original rows and get the aggregate alongside each — perfect for things like 'show each employee's salary vs their department average'."
+---
+
+### ORDER BY (in window functions)
+
+> Defines the ordering for ranking and running aggregates.
+
+```sql
+SELECT Name, Salary,
+       ROW_NUMBER() OVER(ORDER BY Salary DESC) AS RowNum
+FROM Employees;
+```
+
+---
 
 ### ROW_NUMBER, RANK, DENSE_RANK
 
-**What are they?**
-These are **ranking window functions** that assign a number to each row based on an ordering. The difference is how they handle tied values.
-
-- **ROW_NUMBER** — Always unique. Even if two rows have the same value, they get different numbers. Order between ties is arbitrary.
-- **RANK** — Tied rows get the same rank, then the next rank **skips** the gap (1, 2, 2, 4 — rank 3 is skipped).
-- **DENSE_RANK** — Tied rows get the same rank, but the next rank does **not skip** (1, 2, 2, 3 — no gap).
-
-**Interview tip:** The difference between `RANK` and `DENSE_RANK` is the most common follow-up question.
-
-| Function       | What It Does                          | Handles Ties             |
-| -------------- | ------------------------------------- | ------------------------ |
-| `ROW_NUMBER()` | Unique sequential number for each row | No ties — always unique  |
-| `RANK()`       | Ranking with gaps for ties            | 1, 2, 2, **4** (skips 3) |
-| `DENSE_RANK()` | Ranking without gaps for ties         | 1, 2, 2, **3** (no skip) |
+| Function       | Behavior                                            | Example                  |
+| -------------- | --------------------------------------------------- | ------------------------ |
+| `ROW_NUMBER()` | Always unique — no ties                             | 1, 2, 3, 4               |
+| `RANK()`       | Tied rows get same rank, next rank **skips**        | 1, 2, 2, **4** (skips 3) |
+| `DENSE_RANK()` | Tied rows get same rank, next rank **doesn't skip** | 1, 2, 2, **3** (no skip) |
 
 ```sql
 SELECT Name, Salary,
@@ -137,84 +1121,353 @@ FROM Employees;
 -- Alice    90000   1       1        1
 -- Bob      80000   2       2        2
 -- Charlie  80000   3       2        2
--- Dave     70000   4       4        3   ← See the difference!
+-- Dave     70000   4       4        3   ← Notice the difference!
 ```
 
-### GROUPING SETS, CUBE, ROLLUP
+**Interview Tip:** The difference between `RANK` and `DENSE_RANK` is the most common follow-up question.
 
-| Feature         | What It Does                              |
-| --------------- | ----------------------------------------- |
-| `GROUPING SETS` | Group by specific combinations you define |
-| `ROLLUP`        | Hierarchical subtotals (top-down)         |
-| `CUBE`          | All possible combinations of groupings    |
+---
+
+### LAG and LEAD
+
+> Access values from **previous** (LAG) or **next** (LEAD) rows.
 
 ```sql
--- GROUPING SETS — custom groupings
-SELECT Department, Year, SUM(Sales)
-FROM SalesData
-GROUP BY GROUPING SETS ((Department), (Year), ());
+-- Compare each employee's salary to the previous one
+SELECT Name, Salary,
+       LAG(Salary, 1, 0) OVER(ORDER BY Salary DESC) AS PrevSalary,
+       LEAD(Salary, 1, 0) OVER(ORDER BY Salary DESC) AS NextSalary
+FROM Employees;
 
--- ROLLUP — hierarchical subtotals
-SELECT Department, Year, SUM(Sales)
-FROM SalesData
-GROUP BY ROLLUP(Department, Year);
-
--- CUBE — all combinations
-SELECT Department, Year, SUM(Sales)
-FROM SalesData
-GROUP BY CUBE(Department, Year);
+-- Calculate salary difference from previous employee
+SELECT Name, Salary,
+       Salary - LAG(Salary, 1, 0) OVER(ORDER BY Salary DESC) AS SalaryDiff
+FROM Employees;
 ```
 
-### Common Table Expression (CTE)
+---
+
+### Running Total
+
+```sql
+SELECT Name, Salary,
+       SUM(Salary) OVER(ORDER BY EmployeeId ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS RunningTotal
+FROM Employees;
+
+-- Shortcut (same result):
+SELECT Name, Salary,
+       SUM(Salary) OVER(ORDER BY EmployeeId) AS RunningTotal
+FROM Employees;
+```
+
+---
+
+### Moving Averages
+
+```sql
+-- 3-row moving average
+SELECT Name, Salary,
+       AVG(Salary) OVER(ORDER BY EmployeeId ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS MovingAvg
+FROM Employees;
+```
+
+---
+
+## 14. Transactions
+
+### ❓ What is a Transaction?
+
+A **transaction** groups multiple SQL operations into a **single atomic unit** — either **all succeed and commit**, or **all fail and rollback**. No partial commits.
+
+**Classic Example:** Bank transfer — debit Account A, credit Account B. Both must happen or neither.
+
+---
+
+### ACID Properties
+
+| Property        | Meaning                                  | Bank Example                                       |
+| --------------- | ---------------------------------------- | -------------------------------------------------- |
+| **Atomicity**   | All or nothing — no partial commits      | Transfer: both debit AND credit happen, or neither |
+| **Consistency** | DB moves from one valid state to another | Balance can't go negative (if rule enforced)       |
+| **Isolation**   | Concurrent transactions don't interfere  | Two users booking last seat — only one wins        |
+| **Durability**  | Once committed, data survives crashes    | Even server crash after COMMIT doesn't lose data   |
+
+**Interview Answer:** _"ACID guarantees transactions are atomic (all or nothing), consistent (data stays valid), isolated (concurrent transactions don't interfere), and durable (committed data survives crashes)."_
+
+---
+
+### COMMIT, ROLLBACK, SAVEPOINT
+
+```sql
+BEGIN TRANSACTION;
+
+BEGIN TRY
+    UPDATE Accounts SET Balance = Balance - 1000 WHERE AccountId = 1;
+    UPDATE Accounts SET Balance = Balance + 1000 WHERE AccountId = 2;
+
+    COMMIT TRANSACTION;  -- ✅ Both succeed
+END TRY
+BEGIN CATCH
+    ROLLBACK TRANSACTION;  -- ❌ Undo everything
+    THROW;
+END CATCH;
+```
+
+---
+
+### SAVEPOINT
+
+> A **checkpoint** within a transaction — rollback to a savepoint without undoing everything.
+
+```sql
+BEGIN TRANSACTION;
+    INSERT INTO Orders VALUES(1, 'Order1');
+
+    SAVE TRANSACTION SavePoint1;
+
+    INSERT INTO Orders VALUES(2, 'Order2');
+
+    ROLLBACK TRANSACTION SavePoint1;  -- Only undoes Order2
+
+COMMIT TRANSACTION;  -- Order1 is saved
+```
+
+---
+
+### Transaction Isolation Levels
+
+| Level                        | Dirty Read | Non-Repeatable Read | Phantom Read | Performance            |
+| ---------------------------- | ---------- | ------------------- | ------------ | ---------------------- |
+| **READ UNCOMMITTED**         | ✅ Yes     | ✅ Yes              | ✅ Yes       | Fastest (no locks)     |
+| **READ COMMITTED** (Default) | ❌ No      | ✅ Yes              | ✅ Yes       | Good                   |
+| **REPEATABLE READ**          | ❌ No      | ❌ No               | ✅ Yes       | Slower                 |
+| **SERIALIZABLE**             | ❌ No      | ❌ No               | ❌ No        | Slowest (full locks)   |
+| **SNAPSHOT**                 | ❌ No      | ❌ No               | ❌ No        | Good (uses versioning) |
+
+```sql
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+BEGIN TRANSACTION;
+    SELECT * FROM Employees WHERE Salary > 50000;
+COMMIT;
+```
+
+---
+
+### Deadlocks
+
+> A **deadlock** occurs when two transactions are **waiting for each other** to release locks — neither can proceed. SQL Server kills one (the "victim").
+
+**Prevention:**
+
+- Access tables in the same order in all transactions
+- Keep transactions short
+- Use proper indexing to reduce lock duration
+
+---
+
+## 15. Performance Optimization
+
+### EXPLAIN / EXECUTION PLAN
+
+> Shows **how** SQL Server executes a query — reveals table scans, index usage, join types.
+
+```sql
+-- SQL Server
+SET SHOWPLAN_TEXT ON;
+GO
+SELECT * FROM Employees WHERE Department = 'IT';
+GO
+SET SHOWPLAN_TEXT OFF;
+GO
+
+-- Or use SSMS "Display Estimated Execution Plan" (Ctrl+L)
+```
+
+**Look for:**
+
+- ❌ **Table Scan** / **Index Scan** → BAD (reads all rows)
+- ✅ **Index Seek** → GOOD (jumps to matching rows)
+
+---
+
+### Index Optimization
+
+| Problem                               | Solution                                                    |
+| ------------------------------------- | ----------------------------------------------------------- |
+| Query does full table scan            | Add index on `WHERE`/`JOIN` columns                         |
+| Query uses index scan instead of seek | Index exists but isn't selective — check WHERE clause       |
+| Too many indexes                      | Remove unused indexes (check `sys.dm_db_index_usage_stats`) |
+| Index fragmentation > 30%             | REBUILD index                                               |
+
+---
+
+### Avoiding SELECT \*
+
+> `SELECT *` retrieves all columns — wastes network bandwidth and memory.
+
+```sql
+-- ❌ Bad
+SELECT * FROM Employees;
+
+-- ✅ Good
+SELECT EmployeeId, Name, Salary FROM Employees;
+```
+
+---
+
+### Avoiding Subquery Misuse
+
+| Problem                                            | Solution                              |
+| -------------------------------------------------- | ------------------------------------- |
+| Correlated subquery in `WHERE` (runs once per row) | Rewrite as `JOIN` or `EXISTS`         |
+| Subquery in `SELECT` list (runs once per row)      | Use `JOIN` or window function instead |
+
+```sql
+-- ❌ Slow (correlated subquery)
+SELECT Name,
+       (SELECT AVG(Salary) FROM Employees e2 WHERE e2.Department = e1.Department) AS AvgSalary
+FROM Employees e1;
+
+-- ✅ Fast (window function)
+SELECT Name, AVG(Salary) OVER(PARTITION BY Department) AS AvgSalary
+FROM Employees;
+```
+
+---
+
+### Sharding & Partitioning
+
+| Technique        | What it is                                                                                                             |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Partitioning** | Split a large table into smaller pieces (partitions) based on a key (e.g., date range). All partitions in the same DB. |
+| **Sharding**     | Distribute data across multiple databases/servers. Each shard is independent.                                          |
+
+**Example:** Partition `Orders` table by year — `Orders_2023`, `Orders_2024`, `Orders_2025`. Queries on 2024 data only touch one partition.
+
+---
+
+## 16. Triggers
+
+### ❓ What is a Trigger?
+
+A **trigger** is SQL code that **automatically executes** when a specific event (`INSERT`, `UPDATE`, `DELETE`) occurs on a table. You don't call it manually — the database fires it automatically.
+
+**Special tables inside triggers:**
+
+- `INSERTED` — Contains new rows (available in `INSERT` and `UPDATE`)
+- `DELETED` — Contains old rows (available in `DELETE` and `UPDATE`)
+- In `UPDATE`, `DELETED` has old values, `INSERTED` has new values
+
+---
+
+### Types of Triggers
+
+| Type                    | When it fires                     |
+| ----------------------- | --------------------------------- |
+| **AFTER Trigger** (FOR) | After the DML operation completes |
+| **INSTEAD OF Trigger**  | Replaces the DML operation        |
+
+---
+
+### Trigger Examples
+
+```sql
+-- AFTER INSERT Trigger — Audit log
+CREATE TRIGGER trg_AfterInsertEmployee
+ON Employees
+AFTER INSERT
+AS
+BEGIN
+    INSERT INTO AuditLog(Action, EmployeeName, ActionDate)
+    SELECT 'INSERT', Name, GETDATE()
+    FROM INSERTED;  -- INSERTED is a special table with new rows
+END;
+
+-- INSTEAD OF DELETE — Soft delete
+CREATE TRIGGER trg_InsteadOfDelete
+ON Employees
+INSTEAD OF DELETE
+AS
+BEGIN
+    UPDATE Employees SET IsActive = 0
+    WHERE EmployeeId IN (SELECT EmployeeId FROM DELETED);
+END;
+
+-- AFTER UPDATE — Track salary changes
+CREATE TRIGGER trg_AfterUpdateSalary
+ON Employees
+AFTER UPDATE
+AS
+BEGIN
+    IF UPDATE(Salary)
+    BEGIN
+        INSERT INTO SalaryHistory(EmployeeId, OldSalary, NewSalary, ChangeDate)
+        SELECT i.EmployeeId, d.Salary, i.Salary, GETDATE()
+        FROM INSERTED i
+        INNER JOIN DELETED d ON i.EmployeeId = d.EmployeeId;
+    END
+END;
+```
+
+---
+
+### Trigger Use Cases
+
+| Use Case                     | Example                                               |
+| ---------------------------- | ----------------------------------------------------- |
+| **Audit logs**               | Auto-log every INSERT/UPDATE/DELETE                   |
+| **Enforcing business rules** | Prevent salary decrease, ensure referential integrity |
+| **Cascading updates**        | Update related tables automatically                   |
+| **Soft deletes**             | Set `IsActive = 0` instead of deleting                |
+
+---
+
+### When to Be Careful with Triggers
+
+| Risk                   | Why                                                        |
+| ---------------------- | ---------------------------------------------------------- |
+| **Hidden logic**       | Developers don't know trigger is running — hard to debug   |
+| **Performance**        | Triggers fire on every matching DML — adds overhead        |
+| **Cascading triggers** | A trigger can fire another trigger, causing complex chains |
+| **Difficult testing**  | Triggers don't show in application code                    |
+
+---
+
+## 17. Advanced SQL
+
+### Common Table Expressions (CTE)
 
 **What is it?**
-A CTE is a **temporary named result set** that you define at the top of a query using the `WITH` keyword. It exists only for the duration of that one query — it is not stored, not cached, just a named reference.
-
-**Why use it?**
-
-- Makes complex queries readable by breaking them into named steps
-- Replaces deeply nested subqueries that are hard to read
-- Can be referenced multiple times within the same query
-- The only way to write recursive queries in SQL Server
-
-**CTE vs Subquery vs Temp Table:**
-
-- **Subquery** — Nested inside the main query, often repeated if needed multiple times, hard to read
-- **CTE** — Named, at the top, readable, but exists only once per query execution
-- **Temp Table** — Physically stored in `tempdb`, survives across multiple queries in a session, good for large datasets or reuse across statements
+A **CTE** is a temporary named result set defined with `WITH` that exists only for the duration of one query. It improves readability and is the **only way** to write recursive queries in SQL Server.
 
 ```sql
--- Basic CTE — replace a messy nested subquery with a named, readable block
+-- Basic CTE
 WITH HighPaidEmployees AS (
     SELECT Name, Salary, Department
     FROM Employees
     WHERE Salary > 70000
 )
 SELECT * FROM HighPaidEmployees WHERE Department = 'IT';
--- Much more readable than: SELECT * FROM (SELECT ... FROM Employees WHERE ...) sub WHERE ...
 ```
 
-**Interview Answer:** "A CTE is a temporary named result set defined with `WITH` that exists only for one query. It improves readability, replaces nested subqueries, and is the only way to write recursive queries in SQL Server. Unlike a temp table, a CTE isn't stored — it's just a named reference inside a single query."
+---
 
 ### Recursive CTE
 
 **What is it?**
-A recursive CTE is a CTE that **calls itself** — it has two parts joined with `UNION ALL`:
+A CTE that **calls itself** — used for hierarchical data (employee-manager, category trees).
 
-1. **Anchor member** — the starting row(s), no recursion
-2. **Recursive member** — references the CTE itself to get the next level
+**Structure:**
 
-**When to use it:**
-
-- Organizational hierarchies (employee → manager → CEO)
-- Category trees (subcategory → parent category)
-- Bill of materials
-- Any parent-child relationship stored in the same table
+1. **Anchor member** — starting row(s), no recursion
+2. **UNION ALL**
+3. **Recursive member** — references the CTE itself
 
 ```sql
--- Get employee hierarchy
+-- Employee hierarchy (employee → manager → CEO)
 WITH OrgChart AS (
-    -- Anchor: Top-level manager
+    -- Anchor: Top-level manager (no manager above)
     SELECT EmployeeId, Name, ManagerId, 0 AS Level
     FROM Employees WHERE ManagerId IS NULL
 
@@ -228,9 +1481,53 @@ WITH OrgChart AS (
 SELECT * FROM OrgChart;
 ```
 
-### MERGE Statement
+---
 
-> Performs **INSERT, UPDATE, and DELETE** in a **single statement** based on matching conditions. Often called "UPSERT".
+### PIVOT / UNPIVOT
+
+> **PIVOT** converts rows to columns. **UNPIVOT** converts columns to rows.
+
+```sql
+-- PIVOT: Convert rows to columns
+SELECT * FROM (
+    SELECT Department, Year, Sales
+    FROM SalesData
+) AS SourceTable
+PIVOT (
+    SUM(Sales) FOR Year IN ([2023], [2024], [2025])
+) AS PivotTable;
+
+-- Result:
+-- Department | 2023  | 2024  | 2025
+-- IT         | 50000 | 60000 | 70000
+
+-- UNPIVOT: Convert columns to rows
+SELECT Department, Year, Sales
+FROM PivotTable
+UNPIVOT (
+    Sales FOR Year IN ([2023], [2024], [2025])
+) AS UnpivotTable;
+```
+
+---
+
+### Ranking Queries (Recap)
+
+```sql
+-- Top 3 salaries per department
+SELECT * FROM (
+    SELECT Name, Department, Salary,
+           ROW_NUMBER() OVER(PARTITION BY Department ORDER BY Salary DESC) AS Rank
+    FROM Employees
+) AS Ranked
+WHERE Rank <= 3;
+```
+
+---
+
+### MERGE Statement (UPSERT)
+
+> Performs **INSERT, UPDATE, and DELETE** in a single statement based on matching conditions.
 
 ```sql
 MERGE INTO TargetTable AS T
@@ -244,500 +1541,109 @@ WHEN NOT MATCHED BY SOURCE THEN
     DELETE;
 ```
 
-### PIVOT and UNPIVOT
+---
 
-> **PIVOT** = Rows → Columns | **UNPIVOT** = Columns → Rows
+### Full-Text Search
+
+> Search large text columns efficiently (articles, descriptions).
 
 ```sql
--- PIVOT: Convert rows to columns
-SELECT * FROM (
-    SELECT Department, Year, Sales
-    FROM SalesData
-) AS SourceTable
-PIVOT (
-    SUM(Sales) FOR Year IN ([2023], [2024], [2025])
-) AS PivotTable;
+-- Enable full-text search on a column
+CREATE FULLTEXT INDEX ON Articles(Content)
+    KEY INDEX PK_Article;
 
--- UNPIVOT: Convert columns to rows
-SELECT Department, Year, Sales
-FROM PivotTable
-UNPIVOT (
-    Sales FOR Year IN ([2023], [2024], [2025])
-) AS UnpivotTable;
+-- Search
+SELECT * FROM Articles
+WHERE CONTAINS(Content, 'SQL OR database');
 ```
 
 ---
 
-## 3.3 Views and Indexes
+## 🎯 Top 50 SQL Interview Questions
 
-### What is a View?
+### Basics & Queries
 
-> A **View** is a **virtual table** based on a SELECT query. It doesn't store data itself — it pulls data from underlying tables.
+1. What is SQL? What are its types (DDL, DML, DQL, DCL, TCL)?
+2. What is the difference between `DELETE`, `TRUNCATE`, and `DROP`?
+3. What is `NULL`? How do you check for `NULL`?
+4. Difference between `WHERE` and `HAVING`?
+5. What is `DISTINCT`? When would you use it?
+6. What is `LIMIT` / `TOP`?
+7. Explain `BETWEEN`, `IN`, `LIKE` with examples.
 
-```sql
--- Create a view
-CREATE VIEW vw_ActiveEmployees AS
-SELECT EmployeeId, Name, Department
-FROM Employees WHERE IsActive = 1;
+### Joins
 
--- Use it like a table
-SELECT * FROM vw_ActiveEmployees;
+8. What are the types of JOINs? Explain each.
+9. Difference between `INNER JOIN` and `LEFT JOIN`?
+10. What is a `SELF JOIN`? Give an example.
+11. What is a `CROSS JOIN`?
+12. When would you use `FULL OUTER JOIN`?
 
--- Modify a view
-ALTER VIEW vw_ActiveEmployees AS
-SELECT EmployeeId, Name, Department, Salary
-FROM Employees WHERE IsActive = 1;
+### Aggregates & Grouping
 
--- Drop a view
-DROP VIEW vw_ActiveEmployees;
-```
+13. What are aggregate functions? Name 5.
+14. What is `GROUP BY`? How does it work?
+15. Difference between `WHERE` and `HAVING`?
+16. Write a query: Count employees per department, show only depts with > 5 employees.
 
-### Types of Views
+### Subqueries
 
-| Type                            | Description                             |
-| ------------------------------- | --------------------------------------- |
-| **Simple View**                 | Based on one table, no functions/groups |
-| **Complex View**                | Joins, functions, GROUP BY              |
-| **Indexed (Materialized) View** | Physically stores data — faster reads   |
-| **Partitioned View**            | Combines tables from multiple servers   |
+17. What is a subquery? Types?
+18. Difference between correlated and non-correlated subquery?
+19. What is `EXISTS`? How is it different from `IN`?
+20. When to use subquery vs `JOIN`?
 
-### What is an Index?
+### Constraints & Keys
 
-**What is it?**
-An index is a **separate data structure** that SQL Server maintains alongside your table to speed up data lookups. Without an index, SQL Server must scan every row (full table scan) to find matching data. With an index, it can jump directly to the relevant rows.
+21. What are constraints? Name all types.
+22. Difference between `PRIMARY KEY` and `UNIQUE KEY`?
+23. What is a `FOREIGN KEY`? What is referential integrity?
+24. What is a composite key? Give an example.
+25. Surrogate key vs Natural key?
 
-**Real-world analogy:** A book's index at the back. Instead of reading every page to find "recursion", you look it up in the index and go directly to page 245.
+### Normalization
 
-**The trade-off:** Indexes speed up reads (`SELECT`) but slow down writes (`INSERT`, `UPDATE`, `DELETE`) because SQL Server must also update the index when data changes. Don't index every column — index columns used frequently in `WHERE`, `JOIN`, and `ORDER BY`.
+26. What is normalization? Why is it important?
+27. Explain 1NF, 2NF, 3NF with examples.
+28. What is denormalization? When would you denormalize?
 
-**Interview Answer:** "An index is a data structure that improves SELECT performance by allowing SQL Server to locate rows without scanning the entire table. The trade-off is slower writes because the index must be updated too. Clustered indexes physically sort the table data; non-clustered indexes are separate structures with pointers to the actual rows."
+### Indexes
 
-### Types of Indexes
+29. What is an index? Why use it?
+30. Difference between clustered and non-clustered index?
+31. What is a covering index?
+32. When should you NOT use an index?
+33. What is index scan vs index seek?
 
-| Type                    | Description                                                                                                       | Count per table                                     |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| **Clustered Index**     | Sorts and physically stores the actual table data in this order. The table IS the clustered index.                | Only **1** — because you can only sort data one way |
-| **Non-Clustered Index** | A separate structure with index key + pointer back to the actual row.                                             | **Multiple** allowed                                |
-| **Unique Index**        | Enforces uniqueness on the indexed column(s)                                                                      | Multiple                                            |
-| **Covering Index**      | Non-clustered index that includes all columns the query needs (via INCLUDE) — avoids going back to the base table | Multiple                                            |
-| **Filtered Index**      | Index on a subset of rows (with a WHERE clause) — smaller, more efficient for selective queries                   | Multiple                                            |
+### Views, SPs, Functions
 
-**Clustered vs Non-Clustered — in plain English:**
+34. What is a view? Types?
+35. What is a materialized view?
+36. What is a stored procedure? Benefits?
+37. Difference between stored procedure and function?
+38. What are input/output parameters in SP?
 
-- **Clustered** = The rows ARE stored in index order. Like a phone book sorted by last name. There can only be one because you can only sort data one way. Primary Keys automatically get a clustered index.
-- **Non-clustered** = A separate lookup structure. Like the index in a textbook — it doesn't rearrange the pages, it just tells you which page to go to.
+### Window Functions
 
-| Type                    | Description                                                                             |
-| ----------------------- | --------------------------------------------------------------------------------------- |
-| **Clustered Index**     | Sorts and stores actual table data. **Only 1 per table.** Primary Key auto-creates one. |
-| **Non-Clustered Index** | Separate structure with pointers to data. **Multiple allowed.**                         |
-| **Unique Index**        | Ensures all values in the column are unique                                             |
-| **Covering Index**      | Includes all columns needed by a query (avoids going back to table)                     |
-| **Filtered Index**      | Index on a subset of rows (with WHERE)                                                  |
+39. What are window functions? Difference from `GROUP BY`?
+40. Explain `ROW_NUMBER`, `RANK`, `DENSE_RANK` with example.
+41. What is `PARTITION BY`?
+42. What are `LAG` and `LEAD`?
+43. How do you calculate a running total?
 
-```sql
--- Create Clustered Index
-CREATE CLUSTERED INDEX IX_Employee_Id ON Employees(EmployeeId);
+### Transactions
 
--- Create Non-Clustered Index
-CREATE NONCLUSTERED INDEX IX_Employee_Name ON Employees(Name);
+44. What is a transaction? Explain ACID properties.
+45. What are transaction isolation levels?
+46. What is a deadlock? How to prevent it?
+47. Difference between `COMMIT` and `ROLLBACK`?
 
--- Create Covering Index (INCLUDE extra columns)
-CREATE NONCLUSTERED INDEX IX_Emp_Cover
-ON Employees(Department)
-INCLUDE (Name, Salary);
+### Performance & Advanced
 
--- Drop Index
-DROP INDEX IX_Employee_Name ON Employees;
-```
-
-### Index Fragmentation
-
-> Over time, as data is inserted/updated/deleted, indexes get **fragmented** (data becomes scattered). This slows down queries.
-
-```sql
--- Check fragmentation
-SELECT * FROM sys.dm_db_index_physical_stats(DB_ID(), OBJECT_ID('Employees'), NULL, NULL, 'LIMITED');
-
--- Fix: Reorganize (< 30% fragmentation)
-ALTER INDEX IX_Employee_Name ON Employees REORGANIZE;
-
--- Fix: Rebuild (> 30% fragmentation)
-ALTER INDEX IX_Employee_Name ON Employees REBUILD;
-```
+48. How do you optimize a slow query?
+49. What is an execution plan?
+50. What is a trigger? When to use it?
 
 ---
 
-## 3.4 Stored Procedures and User-Defined Functions
-
-### What is a Stored Procedure?
-
-**What is it?**
-A stored procedure is a **named, saved block of SQL code** stored inside the database that you can execute by name. The first time it runs, SQL Server compiles it and caches the execution plan — subsequent calls reuse the cached plan, making it faster.
-
-**Why use stored procedures?**
-
-- **Performance:** Pre-compiled and cached execution plan
-- **Security:** Grant EXECUTE permission without exposing the underlying tables
-- **Reusability:** Write once, call from anywhere (app, reports, other SPs)
-- **Reduced network traffic:** Send one `EXEC` call instead of a long SQL query
-- **Encapsulation:** Business logic lives in the database, centralized
-
-**Stored Procedure vs ad-hoc SQL:**
-Ad-hoc SQL (SQL written directly in your app code) is compiled fresh every time unless the execution plan is cached by coincidence. Stored procedures guarantee the plan is cached and reused.
-
-**Interview Answer:** "A stored procedure is a pre-compiled block of SQL stored in the database. Benefits are performance (cached execution plan), security (grant EXEC without table access), reusability, and reduced network traffic. The main downside is that business logic is split between the application and database, making maintenance harder."
-
-### Types of Stored Procedures
-
-| Type             | Description                                             |
-| ---------------- | ------------------------------------------------------- |
-| **User-defined** | Created by developers for custom logic                  |
-| **System**       | Built-in (`sp_help`, `sp_rename`, etc.)                 |
-| **Temporary**    | `#local` (current session) or `##global` (all sessions) |
-| **Extended**     | Call external programs (legacy, use CLR now)            |
-
-```sql
--- Create a Stored Procedure
-CREATE PROCEDURE usp_GetEmployeesByDept
-    @DeptName NVARCHAR(50),
-    @MinSalary DECIMAL(10,2) = 0  -- Default parameter
-AS
-BEGIN
-    SELECT Name, Salary, Department
-    FROM Employees
-    WHERE Department = @DeptName AND Salary >= @MinSalary
-    ORDER BY Salary DESC;
-END;
-
--- Execute
-EXEC usp_GetEmployeesByDept @DeptName = 'IT', @MinSalary = 50000;
-
--- Modify
-ALTER PROCEDURE usp_GetEmployeesByDept ...
-
--- Delete
-DROP PROCEDURE usp_GetEmployeesByDept;
-
--- With OUTPUT parameter
-CREATE PROCEDURE usp_GetEmpCount
-    @DeptName NVARCHAR(50),
-    @EmpCount INT OUTPUT
-AS
-BEGIN
-    SELECT @EmpCount = COUNT(*) FROM Employees WHERE Department = @DeptName;
-END;
-
--- Call with OUTPUT
-DECLARE @Count INT;
-EXEC usp_GetEmpCount @DeptName = 'IT', @EmpCount = @Count OUTPUT;
-PRINT @Count;
-```
-
-### User-Defined Functions (UDFs)
-
-**What is it?**
-A UDF is a reusable piece of SQL logic that **always returns a value** and can be used directly inside SQL statements like `SELECT`, `WHERE`, and `FROM`. Unlike stored procedures, functions cannot modify data (no `INSERT`, `UPDATE`, `DELETE`).
-
-**Three types:**
-
-- **Scalar** — Returns a single value (one number, one string). Used inline in SELECT/WHERE.
-- **Inline Table-Valued (ITVF)** — Returns a table from a single SELECT. SQL Server can inline/optimize it. Preferred over multi-statement TVF for performance.
-- **Multi-Statement Table-Valued (MSTVF)** — Returns a table but uses multiple statements with conditional logic. Less performant because SQL Server treats the result as opaque — it can't optimize inside it.
-
-**Interview Answer:** "Functions always return a value and can be used in SQL expressions. Scalar functions return a single value; table-valued functions return a table and can be used in FROM clauses like a table. Unlike stored procedures, functions cannot perform DML operations and cannot use transactions."
-
-```sql
--- Scalar Function
-CREATE FUNCTION fn_GetFullName(@FirstName NVARCHAR(50), @LastName NVARCHAR(50))
-RETURNS NVARCHAR(100)
-AS
-BEGIN
-    RETURN @FirstName + ' ' + @LastName;
-END;
-
-SELECT dbo.fn_GetFullName('John', 'Doe'); -- "John Doe"
-
--- Inline Table-Valued Function
-CREATE FUNCTION fn_GetEmployeesByDept(@Dept NVARCHAR(50))
-RETURNS TABLE
-AS
-RETURN (
-    SELECT Name, Salary FROM Employees WHERE Department = @Dept
-);
-
-SELECT * FROM fn_GetEmployeesByDept('IT');
-
--- Multi-Statement Table-Valued Function
--- Use when you need multiple statements / conditional logic before returning
-CREATE FUNCTION dbo.GetTopEarners(@TopN INT)
-RETURNS @Result TABLE (Name NVARCHAR(100), Salary DECIMAL(18,2))
-AS
-BEGIN
-    INSERT INTO @Result
-    SELECT TOP (@TopN) Name, Salary
-    FROM Employees
-    ORDER BY Salary DESC;
-
-    -- Can do more logic here (IF, WHILE, multiple INSERTs, etc.)
-    RETURN;
-END;
-
-SELECT * FROM dbo.GetTopEarners(5);
-```
-
-### Stored Procedure vs Function
-
-| Feature                    | Stored Procedure    | Function            |
-| -------------------------- | ------------------- | ------------------- |
-| Returns                    | Zero or many values | Must return a value |
-| Usage in SELECT            | ❌ Cannot           | ✅ Can              |
-| DML (INSERT/UPDATE/DELETE) | ✅ Allowed          | ❌ Not allowed      |
-| Transaction                | ✅ Can use          | ❌ Cannot           |
-| Call another SP            | ✅ Can              | ❌ Cannot           |
-
----
-
-## 3.5 Triggers and Cursors
-
-### What is a Trigger?
-
-**What is it?**
-A trigger is SQL code that **automatically executes** when a specific event (`INSERT`, `UPDATE`, `DELETE`) occurs on a table. You don't call it manually — the database fires it automatically.
-
-**Special tables inside triggers:**
-
-- `INSERTED` — Contains the new rows (available in INSERT and UPDATE triggers)
-- `DELETED` — Contains the old rows (available in DELETE and UPDATE triggers)
-- In an UPDATE trigger, `DELETED` has the old values and `INSERTED` has the new values
-
-**When to use triggers:**
-
-- Auditing — auto-log every INSERT/UPDATE/DELETE to an audit table
-- Enforcing business rules that can't be done with constraints
-- Soft deletes — intercept DELETE and set `IsActive = 0` instead
-
-**Why to be careful with triggers:**
-
-- **Hidden logic** — A developer doing an INSERT has no idea a trigger is running behind the scenes
-- **Hard to debug** — Trigger errors appear as part of the DML operation, confusing the caller
-- **Performance** — Triggers fire on every matching DML event, adding overhead
-- **Cascading triggers** — A trigger can fire another trigger, causing hard-to-trace chains
-
-### Types of Triggers
-
-| Type                    | When It Fires                      |
-| ----------------------- | ---------------------------------- |
-| **AFTER Trigger** (FOR) | After the DML operation completes  |
-| **INSTEAD OF Trigger**  | Replaces the DML operation         |
-| **Logon Trigger**       | When a user session is established |
-
-```sql
--- AFTER INSERT Trigger — Log new employees
-CREATE TRIGGER trg_AfterInsertEmployee
-ON Employees
-AFTER INSERT
-AS
-BEGIN
-    INSERT INTO AuditLog(Action, EmployeeName, ActionDate)
-    SELECT 'INSERT', Name, GETDATE()
-    FROM INSERTED;  -- INSERTED is a special table with new rows
-END;
-
--- INSTEAD OF DELETE — Soft delete instead of hard delete
-CREATE TRIGGER trg_InsteadOfDelete
-ON Employees
-INSTEAD OF DELETE
-AS
-BEGIN
-    UPDATE Employees SET IsActive = 0
-    WHERE EmployeeId IN (SELECT EmployeeId FROM DELETED);
-END;
-```
-
-**Advantages:** Automatic auditing, enforce business rules, maintain data integrity.
-**Disadvantages:** Hidden logic (hard to debug), performance overhead, can cause chain reactions.
-
-### What is a Cursor?
-
-> A **Cursor** lets you process rows **one at a time** instead of as a set. Think of it as a `for` loop for SQL.
-
-```sql
--- Cursor Example
-DECLARE @Name NVARCHAR(50), @Salary DECIMAL(10,2);
-
-DECLARE emp_cursor CURSOR FOR
-    SELECT Name, Salary FROM Employees WHERE Department = 'IT';
-
-OPEN emp_cursor;
-FETCH NEXT FROM emp_cursor INTO @Name, @Salary;
-
-WHILE @@FETCH_STATUS = 0
-BEGIN
-    PRINT @Name + ' earns ' + CAST(@Salary AS NVARCHAR);
-    FETCH NEXT FROM emp_cursor INTO @Name, @Salary;
-END;
-
-CLOSE emp_cursor;
-DEALLOCATE emp_cursor;
-```
-
-### Cursor Life Cycle
-
-`DECLARE → OPEN → FETCH → (PROCESS) → CLOSE → DEALLOCATE`
-
-### Types of Cursors
-
-| Type             | Description                              |
-| ---------------- | ---------------------------------------- |
-| **Static**       | Snapshot of data at open time            |
-| **Dynamic**      | Reflects real-time changes               |
-| **Forward-Only** | Can only move forward (default, fastest) |
-| **Keyset**       | Detects changes to existing rows         |
-
-⚠️ **Cursor Alternatives (Preferred):** Use `SET-based operations`, `WHILE loops with temp tables`, `CTEs`, or `Window Functions` instead. Cursors are slow!
-
----
-
-## 3.6 Exception Handling
-
-### TRY...CATCH in SQL Server
-
-```sql
-BEGIN TRY
-    -- Code that might fail
-    INSERT INTO Employees(Name, Salary) VALUES('John', -100);
-END TRY
-BEGIN CATCH
-    -- Handle the error
-    SELECT
-        ERROR_NUMBER()    AS ErrorNumber,
-        ERROR_MESSAGE()   AS ErrorMessage,
-        ERROR_SEVERITY()  AS ErrorSeverity,
-        ERROR_STATE()     AS ErrorState,
-        ERROR_LINE()      AS ErrorLine,
-        ERROR_PROCEDURE() AS ErrorProcedure;
-END CATCH;
-```
-
-### THROW vs RAISERROR
-
-| Feature         | THROW                | RAISERROR       |
-| --------------- | -------------------- | --------------- |
-| Introduced      | SQL Server 2012      | Older           |
-| Severity        | Always 16            | Customizable    |
-| Re-throw        | `THROW;` (no params) | Cannot re-throw |
-| **Recommended** | ✅ Yes (modern)      | Legacy use      |
-
-```sql
--- THROW
-THROW 50001, 'Custom error message', 1;
-
--- RAISERROR
-RAISERROR('Error occurred: %s', 16, 1, 'Invalid data');
-
--- Re-throw in CATCH
-BEGIN CATCH
-    PRINT 'Logging error...';
-    THROW; -- Re-throws original error
-END CATCH;
-```
-
----
-
-## 3.7 Transactions
-
-### What is a Transaction?
-
-**What is it?**
-A transaction is a group of SQL operations that are treated as a **single atomic unit** — either ALL operations succeed and commit, or if ANY operation fails, ALL are rolled back as if none of them happened.
-
-**The classic example:** Bank transfer. You need to debit Account A AND credit Account B. If the debit succeeds but the credit fails (e.g., network error), you can't leave Account A deducted without Account B receiving the money. A transaction ensures both happen or neither happens.
-
-**ACID — the four guarantees of transactions:**
-
-| Property        | Meaning                                                 | Bank Example                                         |
-| --------------- | ------------------------------------------------------- | ---------------------------------------------------- |
-| **Atomicity**   | All or nothing — no partial commits                     | Transfer: both debit AND credit happen, or neither   |
-| **Consistency** | DB goes from one valid state to another valid state     | Balance can't go below zero if business rule says so |
-| **Isolation**   | Concurrent transactions don't interfere with each other | Two users booking the last seat — only one wins      |
-| **Durability**  | Once committed, data survives crashes, restarts         | Even server crash after COMMIT doesn't lose data     |
-
-**Interview Answer:** "A transaction groups SQL operations into an atomic unit — either all succeed or all fail, maintaining database integrity. ACID properties guarantee: Atomicity (all or nothing), Consistency (DB stays valid), Isolation (concurrent transactions don't interfere), Durability (committed data survives crashes)."
-
-```sql
-BEGIN TRANSACTION;
-
-BEGIN TRY
-    UPDATE Accounts SET Balance = Balance - 1000 WHERE AccountId = 1;
-    UPDATE Accounts SET Balance = Balance + 1000 WHERE AccountId = 2;
-
-    COMMIT TRANSACTION; -- ✅ Both succeed
-END TRY
-BEGIN CATCH
-    ROLLBACK TRANSACTION; -- ❌ Undo everything
-    THROW;
-END CATCH;
-```
-
-### Savepoints
-
-> A **savepoint** is a checkpoint within a transaction — you can rollback to a specific point without undoing everything.
-
-```sql
-BEGIN TRANSACTION;
-    INSERT INTO Orders VALUES(1, 'Order1');
-
-    SAVE TRANSACTION SavePoint1;
-
-    INSERT INTO Orders VALUES(2, 'Order2');
-
-    ROLLBACK TRANSACTION SavePoint1; -- Only undoes Order2
-COMMIT TRANSACTION; -- Order1 is saved
-```
-
-### Transaction Isolation Levels
-
-| Level                        | Dirty Read | Non-Repeatable Read | Phantom Read | Performance            |
-| ---------------------------- | ---------- | ------------------- | ------------ | ---------------------- |
-| **READ UNCOMMITTED**         | ✅ Yes     | ✅ Yes              | ✅ Yes       | Fastest                |
-| **READ COMMITTED** (Default) | ❌ No      | ✅ Yes              | ✅ Yes       | Good                   |
-| **REPEATABLE READ**          | ❌ No      | ❌ No               | ✅ Yes       | Slower                 |
-| **SERIALIZABLE**             | ❌ No      | ❌ No               | ❌ No        | Slowest                |
-| **SNAPSHOT**                 | ❌ No      | ❌ No               | ❌ No        | Good (uses versioning) |
-
-```sql
-SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
-```
-
-### Deadlocks
-
-> A **deadlock** occurs when two transactions are **waiting for each other** to release locks — neither can proceed. SQL Server automatically kills one (the "victim").
-
-**Prevention:** Access tables in the same order, keep transactions short, use proper indexing.
-
----
-
-## 📝 SQL Quick Recap
-
-| Topic               | Key Point                                                 |
-| ------------------- | --------------------------------------------------------- |
-| `OVER()`            | Window function — works on a set of rows without GROUP BY |
-| `PARTITION BY`      | Split rows into groups for window functions               |
-| `ROW_NUMBER`        | Always unique — no ties                                   |
-| `RANK`              | Gaps on ties (1,2,2,4)                                    |
-| `DENSE_RANK`        | No gaps on ties (1,2,2,3)                                 |
-| CTE                 | Temp named result, one query only                         |
-| Recursive CTE       | Self-referencing, for hierarchies                         |
-| MERGE               | INSERT + UPDATE + DELETE in one statement                 |
-| PIVOT               | Rows → Columns                                            |
-| UNPIVOT             | Columns → Rows                                            |
-| Clustered Index     | Sorts table data, only 1 per table                        |
-| Non-Clustered Index | Separate structure, many allowed                          |
-| Trigger             | Auto-fires on DML events                                  |
-| Cursor              | Row-by-row processing (avoid if possible!)                |
-| ACID                | Atomicity, Consistency, Isolation, Durability             |
-
----
-
-_[← Back to README](./README.md)_
+_[← Back to README](./README.md) | [Next: Module 4 →](./Module4_EFCore_Dapper.md)_
