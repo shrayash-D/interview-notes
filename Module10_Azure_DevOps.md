@@ -1,450 +1,421 @@
 # 📗 Module 10: Cloud & DevOps Basics using Azure
 
-> **Focus:** Understand cloud fundamentals, key Azure services (Compute, Networking, Data, Messaging, Identity), and Azure DevOps for CI/CD pipelines.
+> **Goal:** Simple, interview-ready definitions for every topic. Theory first, tables for quick recall, common interview Q&A at the end.
 
 ---
 
-## 10.1 What is the Cloud?
+## 10.1 Introduction to the Cloud
 
-> The **Cloud** is the delivery of computing services (servers, storage, databases, networking, software) over the internet instead of owning and managing physical hardware.
+### ❓ What is the Cloud?
+The **Cloud** is the delivery of computing services (servers, storage, databases, networking, software) over the **internet** — instead of owning and managing physical hardware.
 
-### Characteristics of the Cloud
+> _"Instead of buying a server, you rent computing power from Microsoft/Amazon/Google and pay only for what you use."_
 
-| Characteristic             | Meaning                                          |
-| -------------------------- | ------------------------------------------------ |
-| **On-demand self-service** | Provision resources instantly without human help |
-| **Broad network access**   | Access from anywhere via internet                |
-| **Resource pooling**       | Share resources across many customers            |
-| **Rapid elasticity**       | Scale up/down quickly based on demand            |
-| **Measured service**       | Pay only for what you use                        |
+---
+
+### ⭐ 5 Characteristics of Cloud (must know!)
+
+| Characteristic | Simple Meaning |
+|---|---|
+| **On-demand self-service** | Spin up resources anytime, no manual approval needed |
+| **Broad network access** | Access from anywhere via internet |
+| **Resource pooling** | Resources are shared across many customers (multi-tenant) |
+| **Rapid elasticity** | Scale up/down instantly based on demand |
+| **Measured service** | Pay only for what you use (like electricity) |
+
+---
 
 ### CapEx vs OpEx
 
-| Type                               | Meaning                               | Example                  | Cloud?                 |
-| ---------------------------------- | ------------------------------------- | ------------------------ | ---------------------- |
-| **CapEx** (Capital Expenditure)    | Upfront investment in physical assets | Buy servers, data center | ❌ No — traditional IT |
-| **OpEx** (Operational Expenditure) | Ongoing costs for services            | Monthly cloud bill       | ✅ Yes — cloud model   |
+| | CapEx | OpEx |
+|---|---|---|
+| **Full form** | Capital Expenditure | Operational Expenditure |
+| **Meaning** | Upfront investment in physical assets | Ongoing pay-as-you-go costs |
+| **Example** | Buy a server for $50,000 | Pay $500/month Azure bill |
+| **Cloud?** | ❌ Traditional IT | ✅ Cloud model |
 
-**Cloud benefit:** Convert CapEx to OpEx — no upfront cost, pay as you go.
+> **Interview tip:** Cloud converts CapEx to OpEx — no upfront hardware cost, just monthly bills.
 
-### Cloud Service Models
+---
 
-| Model                     | You Manage    | Provider Manages                     | Azure Example     |
-| ------------------------- | ------------- | ------------------------------------ | ----------------- |
-| **IaaS** (Infrastructure) | OS, App, Data | Hardware, Networking, Virtualization | Azure VMs         |
-| **PaaS** (Platform)       | App, Data     | OS, Runtime, Hardware                | Azure App Service |
-| **SaaS** (Software)       | Nothing       | Everything                           | Office 365, Gmail |
+### IaaS, PaaS, SaaS
 
-#### Real-World Comparison
+| Model | Full Form | You Manage | Provider Manages | Azure Example |
+|---|---|---|---|---|
+| **IaaS** | Infrastructure as a Service | OS, App, Data | Hardware, network, virtualization | Azure VMs |
+| **PaaS** | Platform as a Service | App & Data only | OS, runtime, hardware | Azure App Service, Azure SQL |
+| **SaaS** | Software as a Service | Nothing — just use it | Everything | Office 365, Azure DevOps |
 
-| Model    | Azure Example             | What you do                                            | What Azure does                               |
-| -------- | ------------------------- | ------------------------------------------------------ | --------------------------------------------- |
-| **IaaS** | **Azure Virtual Machine** | Install OS, install .NET, deploy app, patch the server | Provides hardware, virtualization, networking |
-| **PaaS** | **Azure App Service**     | Push your code (`dotnet publish` / zip deploy)         | Manages OS, .NET runtime, patching, scaling   |
-| **PaaS** | **Azure SQL Database**    | Create tables, write queries                           | Manages SQL Server engine, backups, HA        |
-| **SaaS** | **Office 365**            | Log in and use Word, Outlook, Teams                    | Manages everything end-to-end                 |
-| **SaaS** | **Azure DevOps**          | Create pipelines, boards, repos                        | Hosts and operates the entire platform        |
-| **SaaS** | **GitHub**                | Push code, create PRs                                  | Manages all infrastructure                    |
-
-**Analogy — Pizza as a Service:**
-
+**Pizza Analogy:**
 ```
-IaaS = You rent the kitchen + oven. You buy ingredients, make and cook the pizza.
-PaaS = Pizza dough + sauce provided. You add toppings and bake it.
-SaaS = Order a pizza for delivery. You just eat it.
+IaaS = You rent kitchen + oven. You cook from scratch.
+PaaS = Dough + sauce provided. You add toppings.
+SaaS = Pizza delivered. You just eat it.
 ```
 
-**Interview Answer:** _"IaaS (e.g., Azure VM) gives you a virtual machine — you install the OS, runtime, and app, and you manage everything above the hardware. PaaS (e.g., Azure App Service or Azure SQL) lets you deploy just your code or data while Azure manages the OS and runtime. SaaS (e.g., Office 365, Azure DevOps) is fully managed — you just use the software."_
+**Interview Answer:** _"IaaS gives you a VM — you manage everything above hardware. PaaS (App Service, Azure SQL) lets you deploy code/data while Azure manages OS and runtime. SaaS (Office 365) is fully managed — you just use the software."_
 
-### Types of Clouds
+---
 
-| Type              | Description                               | Use Case                                  |
-| ----------------- | ----------------------------------------- | ----------------------------------------- |
-| **Public Cloud**  | Shared infrastructure managed by provider | Most businesses (Azure, AWS, GCP)         |
-| **Private Cloud** | Dedicated infrastructure for one org      | Banks, government (security-sensitive)    |
-| **Hybrid Cloud**  | Mix of public + private                   | Sensitive data on-premises, rest in cloud |
-| **Multi-cloud**   | Use multiple cloud providers              | Avoid vendor lock-in                      |
+### Types of Cloud
+
+| Type | Description | Use Case |
+|---|---|---|
+| **Public Cloud** | Shared infra managed by provider | Most businesses (Azure, AWS, GCP) |
+| **Private Cloud** | Dedicated infra for one org | Banks, government |
+| **Hybrid Cloud** | Mix of public + private | Sensitive data on-prem, rest in cloud |
+| **Multi-cloud** | Use multiple providers | Avoid vendor lock-in |
+
+---
+
+### Main Cloud Providers
+
+| Provider | Cloud Name |
+|---|---|
+| Microsoft | **Azure** |
+| Amazon | **AWS** (Amazon Web Services) |
+| Google | **GCP** (Google Cloud Platform) |
 
 ---
 
 ## 10.2 Introduction to Azure
 
 ### What is Azure?
+> **Microsoft Azure** is Microsoft's cloud platform with 200+ services — compute, storage, networking, databases, AI, DevOps, and more.
 
-> **Microsoft Azure** is Microsoft's cloud platform with 200+ services across compute, storage, networking, AI, databases, DevOps, and more.
+---
 
-### Azure Regions and Zones
+### Regions and Availability Zones
 
-| Term                  | Description                                                                    |
-| --------------------- | ------------------------------------------------------------------------------ |
-| **Region**            | A geographical area with one or more data centers (e.g., East US, West Europe) |
-| **Availability Zone** | Physically separate data centers within a region — for high availability       |
-| **Region Pair**       | Two regions paired for disaster recovery (East US ↔ West US)                   |
+| Term | Definition |
+|---|---|
+| **Region** | A geographical area with one or more Azure data centers (e.g., East US, West Europe) |
+| **Availability Zone (AZ)** | Physically separate data centers **within** a region — for high availability (99.99% SLA) |
+| **Region Pair** | Two regions paired for disaster recovery (e.g., East US ↔ West US) |
 
-```
-Choose region closest to users for low latency.
-Use Availability Zones for 99.99% SLA on VMs.
-```
+> **Rule:** Choose the region **closest to your users** for low latency. Use Availability Zones for fault tolerance.
+
+---
 
 ### Azure Portal
+> Web-based UI at **portal.azure.com** — create, manage, and monitor all Azure resources.
 
-> Web UI at portal.azure.com — create, manage, monitor all resources.
+---
 
-### Azure CLI
+### Azure CLI & PowerShell
+> Command-line tools to manage Azure resources via scripts — used for automation.
+- **Azure CLI** (`az`) — cross-platform, works on Linux/Mac/Windows
+- **Azure PowerShell** (`Az` module) — Windows-friendly, integrates with PowerShell scripts
 
-```bash
-# Install Azure CLI, then login
-az login
+---
 
-# List subscriptions
-az account list --output table
-
-# Create a Resource Group
-az group create --name MyResourceGroup --location eastus
-
-# List all resources in a group
-az resource list --resource-group MyResourceGroup --output table
-
-# Delete a resource group (deletes everything in it!)
-az group delete --name MyResourceGroup --yes
-```
-
-### Azure Subscriptions and Resource Groups
+### Account → Subscription → Resource Group
 
 ```
-Account
+Azure Account
   └── Subscription (billing unit — e.g., "Dev" or "Production")
-        └── Resource Group (logical container for related resources)
+        └── Resource Group (logical container — group related resources)
               ├── VM
-              ├── SQL Database
+              ├── Azure SQL Database
               └── Storage Account
 ```
+
+---
+
+### Finding / Creating / Removing a Resource
+| Action | How |
+|---|---|
+| **Create** | Portal → "Create a resource" → search → fill form → Create |
+| **Find** | Portal → search bar at top, or browse by service |
+| **Remove** | Open resource → Delete, OR delete the whole Resource Group |
+
+> **Tip:** Deleting a **Resource Group** deletes all resources inside it — useful for cleanup.
 
 ---
 
 ## 10.3 Azure Basic Concepts
 
 ### Resource Groups
+> A **logical container** that groups related Azure resources together.
+> Resources in a group share the same **lifecycle** — deploy, update, and delete together.
 
-> Logical containers that group related resources together. A resource group should contain resources that share the same lifecycle (deploy, update, delete together).
+**Interview Answer:** _"A resource group is a container for related Azure resources. If I have a web app, its database, and storage account all for the same project, I put them in one resource group so I can manage, monitor, and delete them together."_
 
-```bash
-az group create --name MyApp-RG --location "East US"
-```
+---
 
 ### Storage Accounts
 
-> Provides cloud storage for blobs, files, queues, and tables.
+| Type | Use Case |
+|---|---|
+| **Blob Storage** | Files, images, videos, backups (any unstructured data) |
+| **Table Storage** | NoSQL key-value data |
+| **Queue Storage** | Message queues between services |
+| **File Storage** | Shared network files (like a network drive) |
 
-| Storage Type      | Use Case                                    |
-| ----------------- | ------------------------------------------- |
-| **Blob Storage**  | Files, images, videos, backups              |
-| **Table Storage** | NoSQL key-value data                        |
-| **Queue Storage** | Message queues between services             |
-| **File Storage**  | Shared network files (like a network drive) |
+---
 
 ### SLA (Service Level Agreement)
+> Azure's **guarantee of uptime** for each service.
 
-> Azure guarantees a certain uptime percentage per service.
+| SLA | Downtime per month |
+|---|---|
+| 99% | ~7.2 hours |
+| 99.9% | ~43 minutes |
+| 99.95% | ~21 minutes |
+| 99.99% | ~4 minutes |
 
-| SLA    | Downtime per month |
-| ------ | ------------------ |
-| 99%    | ~7.2 hours         |
-| 99.9%  | ~43 minutes        |
-| 99.95% | ~21 minutes        |
-| 99.99% | ~4 minutes         |
+---
+
+### Cost in Azure
+- Pay for compute by the **second/minute**
+- Storage by **GB/month**
+- Network by **data transferred out**
+- Use **Azure Cost Calculator** to estimate before creating resources
+- Set **budgets and alerts** to avoid surprise bills
 
 ---
 
 ## 10.4 Azure Compute
 
 ### Virtual Machines (VMs)
+> An **IaaS** service — gives you a full virtual computer in the cloud. You choose the OS, install software, and manage everything above the hardware.
 
-> Full control over OS and software. Use when you need IaaS.
+**When to use:** Legacy apps, full OS control needed, custom software that can't run on PaaS.
 
-```bash
-# Create VM
-az vm create \
-  --resource-group MyRG \
-  --name MyVM \
-  --image Win2022Datacenter \
-  --admin-username azureuser \
-  --admin-password YourPassword123!
+---
 
-# Start/Stop VM
-az vm start --resource-group MyRG --name MyVM
-az vm stop  --resource-group MyRG --name MyVM
+### ARM Template (Infrastructure as Code)
+> A **JSON file** that defines Azure resources so you can deploy the same infrastructure consistently every time.
+> Think of it as a "recipe" for your Azure environment.
 
-# Delete VM
-az vm delete --resource-group MyRG --name MyVM --yes
-```
+**Interview Answer:** _"ARM templates are JSON files that describe your Azure infrastructure as code — you can version-control them, deploy the same environment repeatedly, and avoid manual mistakes."_
 
-### ARM Templates (Infrastructure as Code)
+---
 
-> **ARM (Azure Resource Manager) Templates** are JSON files that define Azure resources — deploy consistently every time.
+### App Service (PaaS Web Hosting)
+> Fully managed **PaaS** hosting for web apps — you just deploy your code, Azure manages the OS, runtime, patching, and scaling.
 
-```json
-{
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "storageAccountName": { "type": "string" }
-  },
-  "resources": [
-    {
-      "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2022-09-01",
-      "name": "[parameters('storageAccountName')]",
-      "location": "[resourceGroup().location]",
-      "sku": { "name": "Standard_LRS" },
-      "kind": "StorageV2"
-    }
-  ]
-}
-```
+**When to use:** Web apps, REST APIs (.NET, Node.js, Python, Java, etc.)
 
-```bash
-az deployment group create --resource-group MyRG --template-file template.json
-```
+#### App Service Tiers
 
-### Azure App Service
+| Tier | Use Case | Key Feature |
+|---|---|---|
+| **Free (F1)** | Dev/test | No custom domain |
+| **Basic (B1-B3)** | Low traffic | Custom domain, manual scale |
+| **Standard (S1-S3)** | Production | Auto-scale, deployment slots |
+| **Premium (P1-P3)** | High traffic | More power, VNet integration |
 
-> **PaaS** hosting for web apps — no OS management needed. Just deploy your code.
+---
 
-```bash
-# Create App Service Plan (compute resources)
-az appservice plan create --name MyPlan --resource-group MyRG --sku B1 --is-linux
+### Auto Scaling
+> Automatically **increase or decrease** the number of app instances based on CPU, memory, or request count.
+- **Scale out** = add more instances (horizontal)
+- **Scale in** = remove instances
+- Rules: _"If CPU > 70% for 5 minutes → add 1 instance"_
 
-# Create Web App
-az webapp create --name MyWebApp --resource-group MyRG --plan MyPlan --runtime "DOTNET:8.0"
-
-# Deploy from local folder
-az webapp deploy --resource-group MyRG --name MyWebApp --src-path ./publish
-```
-
-### App Service Tiers
-
-| Tier                 | Use Case     | Features                       |
-| -------------------- | ------------ | ------------------------------ |
-| **Free (F1)**        | Dev/test     | 1 GB, no custom domain         |
-| **Basic (B1-B3)**    | Low traffic  | Custom domain, manual scale    |
-| **Standard (S1-S3)** | Production   | Auto-scale, deployment slots   |
-| **Premium (P1-P3)**  | High traffic | More CPU/RAM, VNet integration |
+---
 
 ### Deployment Slots
+> **Staging environments** within the same App Service.
+> Deploy to "staging", test it, then **swap** staging ↔ production with **zero downtime**.
 
-> Staging environments — deploy to "staging" slot, test, then **swap** to production with zero downtime.
-
-```bash
-az webapp deployment slot create --name MyWebApp --resource-group MyRG --slot staging
-az webapp deployment slot swap   --name MyWebApp --resource-group MyRG --slot staging
 ```
+Deploy to staging → Test → Swap → Production updated instantly
+```
+
+**Interview Answer:** _"Deployment slots let you deploy to a staging environment first, test it, then swap to production with zero downtime. If something goes wrong, you can swap back immediately."_
+
+---
+
+### Deployment Types
+
+| Type | Meaning |
+|---|---|
+| **Zip Deploy** | Upload a `.zip` of your published app |
+| **Git Deploy** | Push directly from a git repo |
+| **Azure DevOps Pipeline** | Automated CI/CD deployment |
+| **Container Deploy** | Deploy a Docker container image |
+
+---
 
 ### Azure Functions (Serverless)
+> Run **small pieces of code** without managing any servers. You pay only when the function actually executes.
 
-> Run code without managing servers — pay only when the function executes.
+**Triggers (what starts a function):**
 
-```csharp
-// HTTP triggered function
-public static class EmployeeFunction
-{
-    [FunctionName("GetEmployee")]
-    public static async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "employees/{id}")] HttpRequest req,
-        int id,
-        ILogger log)
-    {
-        log.LogInformation($"Getting employee {id}");
-        var employee = await _service.GetByIdAsync(id);
-        return new OkObjectResult(employee);
-    }
-}
+| Trigger | When it fires |
+|---|---|
+| **HttpTrigger** | HTTP request hits a URL |
+| **TimerTrigger** | Scheduled (like a cron job) |
+| **BlobTrigger** | File uploaded to Blob Storage |
+| **QueueTrigger** | Message arrives in a queue |
+| **EventGridTrigger** | An Azure event is published |
 
-// Triggers:
-// HttpTrigger    — HTTP request
-// TimerTrigger   — scheduled (like cron)
-// BlobTrigger    — when file uploaded to blob
-// QueueTrigger   — when message arrives in queue
-// EventGridTrigger — when event published
-```
+**Interview Answer:** _"Azure Functions are serverless — you write a function, configure a trigger, and Azure runs it when the trigger fires. No servers to manage, and you pay per execution (very cheap for infrequent tasks)."_
+
+---
 
 ### AKS (Azure Kubernetes Service)
+> **Managed Kubernetes** in Azure — Azure manages the Kubernetes control plane; you manage your containerized workloads.
 
-> Managed Kubernetes in Azure — Azure handles the control plane; you manage worker nodes and workloads.
+**Interview Answer:** _"AKS is managed Kubernetes. Instead of setting up and maintaining Kubernetes yourself, Azure handles the control plane. You just deploy your container workloads."_
 
-```bash
-# Create AKS cluster
-az aks create --resource-group MyRG --name MyAKS --node-count 3 --generate-ssh-keys
+---
 
-# Get credentials (connect kubectl to AKS)
-az aks get-credentials --resource-group MyRG --name MyAKS
+### Containers & Docker (quick recap)
+> A **container** packages your app and all its dependencies into a portable unit that runs consistently anywhere.
+- **Docker** = tool to build and run containers
+- **Azure Container Registry (ACR)** = Azure's private registry to store your Docker images
+- **AKS** = run containers at scale with Kubernetes
 
-# Deploy to AKS
-kubectl apply -f deployment.yml
-```
+---
+
+### How to Choose Compute Type?
+
+| Scenario | Use |
+|---|---|
+| Full OS control, custom software | **Azure VM (IaaS)** |
+| Web app / REST API, just deploy code | **App Service (PaaS)** |
+| Small functions, event-driven, infrequent | **Azure Functions (Serverless)** |
+| Containerized microservices at scale | **AKS** |
 
 ---
 
 ## 10.5 Azure Networking
 
 ### Virtual Networks (VNets)
-
-> **VNet** is a private network in Azure — resources inside can communicate securely. Like your own data center network in the cloud.
+> A **private network** in Azure — your resources communicate securely inside it, isolated from the public internet.
 
 ```
-VNet: 10.0.0.0/16
-  ├── Subnet 1: 10.0.1.0/24  ← Web tier (VMs, App Service)
-  ├── Subnet 2: 10.0.2.0/24  ← App tier (APIs)
-  └── Subnet 3: 10.0.3.0/24  ← Data tier (SQL, Redis)
+VNet (10.0.0.0/16)
+  ├── Subnet 1: Web tier   → App Service / VMs (public-facing)
+  ├── Subnet 2: App tier   → APIs (internal)
+  └── Subnet 3: Data tier  → SQL, Redis (no internet access)
 ```
 
-```bash
-# Create VNet
-az network vnet create --name MyVNet --resource-group MyRG --address-prefix 10.0.0.0/16
+---
 
-# Create subnet
-az network vnet subnet create --name WebSubnet --vnet-name MyVNet \
-  --resource-group MyRG --address-prefix 10.0.1.0/24
-```
+### Subnets
+> Subdivisions of a VNet. Separate resources into **tiers** for security and organization.
 
-### Load Balancer vs Application Gateway
+---
 
-| Service                 | OSI Layer            | Use Case                           |
-| ----------------------- | -------------------- | ---------------------------------- |
-| **Load Balancer**       | Layer 4 (TCP/UDP)    | Distribute traffic to VMs          |
-| **Application Gateway** | Layer 7 (HTTP/HTTPS) | Route by URL, SSL termination, WAF |
+### Secure VM Access
+| Method | Description |
+|---|---|
+| **Bastion** | Secure RDP/SSH in browser — no public IP needed on VM |
+| **Just-in-Time (JIT) Access** | Open port only when needed, auto-close after |
+| **NSG (Network Security Group)** | Firewall rules to allow/deny traffic |
+
+---
 
 ### Service Endpoint vs Private Link
 
-| Feature       | Service Endpoint               | Private Link              |
-| ------------- | ------------------------------ | ------------------------- |
-| **Traffic**   | Stays in Azure backbone        | Stays in your VNet        |
-| **Access**    | Any Azure service of that type | Specific resource only    |
-| **Public IP** | Service still has public IP    | Service gets a private IP |
-| **Cost**      | Free                           | Has a cost                |
+| | Service Endpoint | Private Link |
+|---|---|---|
+| **Traffic** | Stays in Azure backbone | Stays in your VNet |
+| **Access** | Any resource of that type | Specific resource only |
+| **Public IP** | Service still has public IP | Service gets a private IP |
+| **Cost** | Free | Has a cost |
+
+---
+
+### Load Balancer vs Application Gateway
+
+| Service | OSI Layer | Use Case |
+|---|---|---|
+| **Load Balancer** | Layer 4 (TCP/UDP) | Distribute traffic to VMs |
+| **Application Gateway** | Layer 7 (HTTP/HTTPS) | Route by URL, SSL termination, WAF |
+
+**Interview tip:** _Load Balancer = network traffic. Application Gateway = web traffic with smarter rules._
 
 ---
 
 ## 10.6 Data in Azure
 
 ### Azure SQL Database
+> Fully managed **SQL Server** in the cloud — no patching, backups, or HA setup needed. Just create and query.
 
-> Fully managed SQL Server in the cloud — no patching, backups handled by Azure.
+**When to use:** Relational data, transactions, structured schema.
 
-```bash
-# Create SQL Server
-az sql server create --name mysqlserver --resource-group MyRG \
-  --admin-user sqladmin --admin-password YourPass123!
-
-# Create database
-az sql db create --resource-group MyRG --server mysqlserver \
-  --name EmployeeDB --service-objective S0
-
-# Connection string
-Server=tcp:mysqlserver.database.windows.net,1433;Database=EmployeeDB;
-User=sqladmin@mysqlserver;Password=YourPass123!;
-```
+---
 
 ### Cosmos DB
+> Fully managed **NoSQL** database — globally distributed, supports multiple APIs (SQL, MongoDB, Cassandra).
 
-> Fully managed **NoSQL** database — globally distributed, multiple APIs (SQL, MongoDB, Cassandra, etc.)
+---
 
-| Feature         | Azure SQL                     | Cosmos DB                       |
-| --------------- | ----------------------------- | ------------------------------- |
-| **Type**        | Relational (SQL)              | NoSQL (document, key-value)     |
-| **Schema**      | Fixed schema                  | Flexible (schemaless)           |
-| **Scalability** | Vertical                      | Horizontal (unlimited)          |
-| **Query**       | T-SQL                         | SQL API, MongoDB API, etc.      |
-| **Use case**    | Structured data, transactions | Unstructured data, global scale |
-| **SLA**         | 99.99%                        | 99.999%                         |
+### SQL vs NoSQL (Azure SQL vs Cosmos DB)
 
-```csharp
-// Use Cosmos DB with .NET SDK
-var client = new CosmosClient("connection-string");
-var database = client.GetDatabase("EmployeeDB");
-var container = database.GetContainer("Employees");
+| | Azure SQL | Cosmos DB |
+|---|---|---|
+| **Type** | Relational | NoSQL (document, key-value) |
+| **Schema** | Fixed | Flexible / schemaless |
+| **Scalability** | Vertical | Horizontal (unlimited) |
+| **Query** | T-SQL | SQL API, MongoDB API, etc. |
+| **SLA** | 99.99% | 99.999% |
+| **Use case** | Transactions, structured data | Global scale, flexible data |
 
-// Add item
-var employee = new { id = "1", name = "John", department = "IT" };
-await container.CreateItemAsync(employee, new PartitionKey("IT"));
+**Interview Answer:** _"Azure SQL is a managed SQL Server — use it for relational data with transactions. Cosmos DB is NoSQL — use it when you need global distribution, flexible schema, or massive scale."_
 
-// Query items
-var query = new QueryDefinition("SELECT * FROM c WHERE c.department = @dept")
-    .WithParameter("@dept", "IT");
-var results = container.GetItemQueryIterator<Employee>(query);
-```
+---
 
-### Azure Storage
+### Azure Storage (Blob)
+> Store any file (images, PDFs, backups) in the cloud at low cost.
+- **SAS URL** = a temporary, time-limited link to a blob — share without giving your account key
 
-```csharp
-// Upload to Blob Storage
-var blobServiceClient = new BlobServiceClient("connection-string");
-var containerClient = blobServiceClient.GetBlobContainerClient("documents");
-await containerClient.CreateIfNotExistsAsync();
+---
 
-var blobClient = containerClient.GetBlobClient("report.pdf");
-await blobClient.UploadAsync(fileStream);
-
-// Generate SAS URL (temporary access link)
-var sasUri = blobClient.GenerateSasUri(BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(1));
-```
+### CDN (Content Delivery Network)
+> Caches static content (images, CSS, JS) on **edge servers** close to users worldwide — faster load times.
 
 ---
 
 ## 10.7 Messaging in Azure
 
-### Storage Queue
+### Why Messaging?
+> Messaging **decouples** services — Service A puts a message in a queue; Service B processes it later. Neither needs to be running at the same time.
 
-> Simple FIFO message queue — basic, cheap, up to 64KB per message.
-
-```csharp
-var queueClient = new QueueClient("connection-string", "my-queue");
-await queueClient.CreateIfNotExistsAsync();
-
-// Send message
-await queueClient.SendMessageAsync("Hello from Employee Service!");
-
-// Receive and process message
-var message = await queueClient.ReceiveMessageAsync();
-Console.WriteLine(message.Value.MessageText);
-await queueClient.DeleteMessageAsync(message.Value.MessageId, message.Value.PopReceipt);
-```
-
-### Event Grid
-
-> Publish-Subscribe service for **event-driven** architectures. Route events from Azure resources to handlers.
-
-```
-Blob uploaded → Event Grid → Azure Function → Resize image
-VM deallocated → Event Grid → Logic App → Send email alert
-```
-
-### Service Bus
-
-> Enterprise-grade message broker — supports **queues** and **topics/subscriptions**, guaranteed delivery, dead-letter queue.
-
-```csharp
-// Send message
-var client = new ServiceBusClient("connection-string");
-var sender = client.CreateSender("employee-events");
-await sender.SendMessageAsync(new ServiceBusMessage("Employee created: John Doe"));
-
-// Receive message
-var receiver = client.CreateReceiver("employee-events");
-var message = await receiver.ReceiveMessageAsync();
-Console.WriteLine(message.Body.ToString());
-await receiver.CompleteMessageAsync(message);
-```
+---
 
 ### Messaging Comparison
 
-| Service               | Type             | Use Case                                       |
-| --------------------- | ---------------- | ---------------------------------------------- |
-| **Storage Queue**     | Simple queue     | Basic decoupling, cheap                        |
-| **Service Bus Queue** | Enterprise queue | Ordered, guaranteed, retry logic               |
-| **Service Bus Topic** | Pub/Sub          | Multiple subscribers to one message            |
-| **Event Grid**        | Event routing    | React to Azure resource events                 |
-| **Event Hubs**        | Event streaming  | High-throughput (millions/sec), IoT, analytics |
+| Service | Type | Best For |
+|---|---|---|
+| **Storage Queue** | Simple queue | Basic decoupling, cheap, low volume |
+| **Service Bus Queue** | Enterprise queue | Ordered delivery, retry, dead-letter |
+| **Service Bus Topic** | Pub/Sub | Multiple subscribers to one message |
+| **Event Grid** | Event routing | React to Azure resource events (blob created, VM stopped) |
+| **Event Hubs** | Event streaming | High-throughput (millions/sec), IoT, analytics |
+
+---
+
+### Storage Queue
+> Simplest queue. FIFO, up to 64KB per message. Cheap and easy.
+
+---
+
+### Service Bus
+> **Enterprise-grade** message broker.
+- **Queue** = one sender, one receiver (point-to-point)
+- **Topic + Subscription** = one sender, **multiple receivers** (publish-subscribe)
+- Features: guaranteed delivery, ordering, dead-letter queue, retry policy
+
+---
+
+### Event Grid
+> Publish-Subscribe for **events** (not messages). Reacts to things that happen in Azure.
+```
+Blob file uploaded → Event Grid → Azure Function → process the file
+VM stopped → Event Grid → Logic App → send alert email
+```
+
+---
+
+### Event Hubs
+> Designed for **high-throughput event streaming** — millions of events per second.
+- Use case: IoT telemetry, clickstream data, log aggregation
 
 ---
 
@@ -452,138 +423,169 @@ await receiver.CompleteMessageAsync(message);
 
 ### Key Concepts
 
-| Term                  | Description                                                         |
-| --------------------- | ------------------------------------------------------------------- |
-| **Tenant**            | An organization's instance of AAD (e.g., cognizant.onmicrosoft.com) |
-| **User**              | A person with an account in the tenant                              |
-| **Group**             | Collection of users (e.g., Developers, Admins)                      |
-| **App Registration**  | Registers your app with AAD for OAuth/OIDC                          |
-| **Service Principal** | Identity for applications/services                                  |
-| **MFA**               | Multi-Factor Authentication (password + phone/app)                  |
-| **RBAC**              | Role-Based Access Control — assign roles to users/groups            |
+| Term | Definition |
+|---|---|
+| **Tenant** | Your organization's instance of AAD (e.g., `cognizant.onmicrosoft.com`) |
+| **User** | A person with an identity in the tenant |
+| **Group** | Collection of users (e.g., Developers, Admins) |
+| **App Registration** | Registers your app with AAD for OAuth/OIDC authentication |
+| **Service Principal** | Identity for an application or automated service |
+| **MFA** | Multi-Factor Authentication — password + second factor (phone/authenticator app) |
+| **RBAC** | Role-Based Access Control — assign permissions via roles, not individually |
+
+---
 
 ### Azure Roles (RBAC)
 
-| Role            | Permission                                      |
-| --------------- | ----------------------------------------------- |
-| **Owner**       | Full control including access management        |
-| **Contributor** | Create/manage resources but can't manage access |
-| **Reader**      | View resources only                             |
-| **Custom Role** | Define exactly what permissions are needed      |
+| Role | What you can do |
+|---|---|
+| **Owner** | Full control, including assigning access to others |
+| **Contributor** | Create and manage resources, but can't manage access |
+| **Reader** | View resources only, no changes |
+| **Custom Role** | Define exactly which permissions are needed |
 
-```bash
-# Assign role to user
-az role assignment create \
-  --assignee user@domain.com \
-  --role Contributor \
-  --scope /subscriptions/{sub-id}/resourceGroups/MyRG
+**Interview Answer:** _"RBAC in Azure lets you assign roles (Owner, Contributor, Reader) to users or groups at different scopes (subscription, resource group, or individual resource). This follows the principle of least privilege."_
+
+---
+
+### OAuth 2.0 + JWT Flow
 ```
-
-### OAuth 2.0 + JWT in Azure
-
-```
-1. User logs in via Azure AD (Microsoft login)
+1. User logs in → Azure AD authenticates
 2. Azure AD issues JWT access token
-3. App includes token in API calls: Authorization: Bearer <token>
-4. API validates token against Azure AD
-
-// Protect API with Azure AD
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+3. App sends token in every API call: Authorization: Bearer <token>
+4. API validates token with Azure AD
 ```
 
 ---
 
 ## 10.9 Azure DevOps Overview
 
-> **Azure DevOps** is a set of developer tools for planning, developing, testing, and deploying software.
+### What is Azure DevOps?
+> A set of **cloud-based developer tools** that cover the entire software delivery lifecycle — from planning to deployment.
 
-### Key Components
+---
 
-| Service              | Purpose                                              |
-| -------------------- | ---------------------------------------------------- |
-| **Azure Boards**     | Agile project management (User Stories, Tasks, Bugs) |
-| **Azure Repos**      | Git source control                                   |
-| **Azure Pipelines**  | CI/CD build and release automation                   |
-| **Azure Test Plans** | Manual and automated testing                         |
-| **Azure Artifacts**  | Package management (NuGet, npm, Maven)               |
+### Key Components (5 services)
+
+| Service | Purpose |
+|---|---|
+| **Azure Boards** | Agile project management — User Stories, Tasks, Bugs, Sprints |
+| **Azure Repos** | Git source control — host and manage code |
+| **Azure Pipelines** | CI/CD — automate build, test, and deploy |
+| **Azure Test Plans** | Manual and automated testing |
+| **Azure Artifacts** | Package management — NuGet, npm, Maven feeds |
+
+**Interview Answer:** _"Azure DevOps has 5 services: Boards for planning, Repos for source control, Pipelines for CI/CD, Test Plans for testing, and Artifacts for package management."_
 
 ---
 
 ## 10.10 Azure Repos (Git)
 
-### Git Basics
+### What is Azure Repos?
+> Azure's **Git hosting** service — like GitHub but inside Azure DevOps. Supports pull requests, branch policies, and code reviews.
 
-```bash
-git init                          # Initialize a new repo
-git clone <url>                   # Clone a repo
-git add .                         # Stage all changes
-git commit -m "message"           # Commit changes
-git push origin main              # Push to remote
-git pull                          # Pull latest changes
-git status                        # Check what changed
-git log --oneline                 # Short commit history
+---
+
+### Git Basics (must know commands)
+
+| Command | What it does |
+|---|---|
+| `git init` | Create a new local repo |
+| `git clone <url>` | Copy a remote repo locally |
+| `git add .` | Stage all changed files |
+| `git commit -m "msg"` | Save snapshot of staged changes |
+| `git push origin main` | Upload commits to remote |
+| `git pull` | Fetch and merge latest from remote |
+| `git checkout -b feature/x` | Create and switch to new branch |
+| `git merge feature/x` | Merge a branch into current branch |
+| `git log --oneline` | Short history of commits |
+
+---
+
+### Branching Strategies
+
+| Strategy | Description |
+|---|---|
+| **Feature Branch** | Each feature in its own branch → merge via PR |
+| **GitFlow** | main + develop + feature/release/hotfix branches |
+| **Trunk-Based Development** | Everyone commits to main, use feature flags |
+
+**Common flow:**
+```
+main ← production
+  └── develop ← integration
+        ├── feature/login
+        └── bugfix/null-check
 ```
 
-### Branching Strategy
+---
 
-```
-main          ← Production code only
-  └── develop ← Integration branch
-        ├── feature/login     ← New feature
-        ├── feature/reports   ← Another feature
-        └── bugfix/null-check ← Bug fix
-```
+### Pull Request (PR)
+> A request to **merge** your branch into another. Team reviews the code before it merges.
 
-### Git Workflow
+**PR Best Practices:**
+- Keep PRs small (< 400 lines)
+- Write a clear description
+- All tests must pass
+- At least 1 reviewer approval
+- Use **branch policies** to enforce these rules automatically
 
-```bash
-# Feature branch workflow
-git checkout -b feature/add-employee    # Create and switch to branch
-# ... make changes ...
-git add .
-git commit -m "Add employee endpoint"
-git push origin feature/add-employee   # Push branch
-# Create Pull Request in Azure DevOps
-# Team reviews → Approve → Merge to develop
-```
+---
 
-### Pull Request (PR) Best Practices
+### Merging Strategies
 
-- Small PRs (< 400 lines) — easier to review
-- Clear description of what changed and why
-- All tests must pass before merge
-- At least 1 reviewer approval required
-- Use **branch policies** to enforce these rules
+| Strategy | Description |
+|---|---|
+| **Merge Commit** | Keeps full branch history |
+| **Squash Merge** | Combines all commits into one clean commit |
+| **Rebase** | Replays commits on top of target branch (linear history) |
 
 ---
 
 ## 10.11 Azure Boards
 
-### Work Item Types
+### What is Azure Boards?
+> Agile project management tool — track work items (stories, tasks, bugs) with boards, backlogs, and sprints.
 
-| Type           | Description                                                                            |
-| -------------- | -------------------------------------------------------------------------------------- |
-| **Epic**       | Large feature spanning multiple sprints (e.g., "User Management Module")               |
-| **Feature**    | A specific capability (e.g., "User Login")                                             |
-| **User Story** | A feature from user perspective: "As a user, I want to log in so I can access my data" |
-| **Task**       | A specific technical task within a story (e.g., "Create JWT endpoint")                 |
-| **Bug**        | A defect that needs fixing                                                             |
+---
 
-### Scrum Concepts
+### Work Item Hierarchy
 
-| Term                     | Description                                                    |
-| ------------------------ | -------------------------------------------------------------- |
-| **Sprint**               | Time-boxed work period (usually 2 weeks)                       |
-| **Sprint Backlog**       | Stories/tasks committed for this sprint                        |
-| **Product Backlog**      | All upcoming work, prioritized                                 |
-| **Daily Standup**        | 15-min daily meeting: what did I do, what will I do, blockers? |
-| **Sprint Review**        | Demo completed work to stakeholders                            |
-| **Sprint Retrospective** | Team discusses what went well and what to improve              |
-| **Velocity**             | How many story points a team completes per sprint              |
+```
+Epic (large goal)
+  └── Feature (capability)
+        └── User Story ("As a user, I want to...")
+              └── Task (specific technical work)
+              └── Bug (defect to fix)
+```
 
-### Kanban Board States
+| Type | Example |
+|---|---|
+| **Epic** | "User Management Module" |
+| **Feature** | "User Login" |
+| **User Story** | "As a user, I want to log in so I can access my data" |
+| **Task** | "Create JWT authentication endpoint" |
+| **Bug** | "Login fails when email has uppercase letters" |
 
+---
+
+### Agile & Scrum
+
+| Term | Definition |
+|---|---|
+| **Sprint** | Time-boxed work period, usually 2 weeks |
+| **Product Backlog** | All upcoming work, prioritized by product owner |
+| **Sprint Backlog** | Work committed for this sprint |
+| **Daily Standup** | 15-min daily: What did I do? What will I do? Blockers? |
+| **Sprint Review** | Demo completed work to stakeholders at end of sprint |
+| **Sprint Retrospective** | Team reflects: what went well, what to improve |
+| **Velocity** | How many story points a team completes per sprint |
+| **Story Point** | Relative effort estimate (1, 2, 3, 5, 8, 13...) |
+
+---
+
+### Kanban Board
+> Visual board showing work item states:
 ```
 To Do → In Progress → In Review → Done
 ```
@@ -592,210 +594,276 @@ To Do → In Progress → In Review → Done
 
 ## 10.12 Azure Pipelines — CI/CD
 
-**What is CI/CD?**
-CI/CD is the practice of automating the build, test, and deployment process so that code changes go from a developer's commit to running in production reliably and quickly, without manual steps.
+### What is CI/CD?
 
-- **CI (Continuous Integration)** — Every time code is pushed, an automated pipeline runs: restore packages → build → run tests. Catches broken code immediately before it affects the team.
-- **CD (Continuous Delivery)** — After CI passes, the pipeline automatically deploys to a staging/QA environment. A human approves the final push to production.
-- **CD (Continuous Deployment)** — Fully automated end-to-end, including production deployment. No human gate.
+| Term | Full Form | Meaning |
+|---|---|---|
+| **CI** | Continuous Integration | Every commit auto-triggers: build → test. Catch broken code immediately. |
+| **CD** | Continuous Delivery | After CI, auto-deploy to staging. Human approves production. |
+| **CD** | Continuous Deployment | Fully automated including production — no manual step. |
 
 **Why CI/CD?**
-Without it, deployments are manual, error-prone, and happen infrequently (leading to big scary releases). With CI/CD, deployments are small, automated, and frequent — catching issues early when they're cheap to fix.
+> Without it, deployments are manual, error-prone, and infrequent (big, scary releases).
+> With CI/CD, every commit is automatically built, tested, and deployed — small, safe, frequent releases.
 
-**Azure Pipelines** is Azure DevOps's CI/CD service. You define the pipeline as a YAML file (`azure-pipelines.yml`) committed alongside your code. This means your pipeline is version-controlled, reviewed in PRs, and changes are tracked.
+**Interview Answer:** _"CI/CD automates the entire build-test-deploy cycle. Every time I push code, the pipeline builds it and runs all tests automatically. If everything passes, it deploys to staging. Production deployment can require a manual approval gate. This replaces slow, risky manual deployments."_
 
-**Stages:** A pipeline is split into stages (Build, Test, Deploy to staging, Deploy to prod). Each stage can have approval gates — a human must approve before the next stage runs.
+---
 
-**Interview Answer:** "CI/CD automates the build-test-deploy cycle. With Azure Pipelines, every commit triggers a YAML pipeline: restore → build → test. If all pass, it deploys to staging automatically. Production deployment can require a manual approval gate. This replaces slow, risky manual deployments with fast, reliable automated ones."
+### Building Blocks of a Pipeline
 
-| Term   | Full Form              | Meaning                                     |
-| ------ | ---------------------- | ------------------------------------------- |
-| **CI** | Continuous Integration | Auto-build and test on every commit         |
-| **CD** | Continuous Delivery    | Auto-deploy to staging; human approves prod |
-| **CD** | Continuous Deployment  | Auto-deploy to production (no manual step)  |
+| Concept | Definition |
+|---|---|
+| **Pipeline** | The entire automated workflow |
+| **Stage** | A phase of the pipeline (Build, Test, Deploy) |
+| **Job** | A unit of work that runs on an agent |
+| **Step** | An individual task or script in a job |
+| **Agent** | The machine that runs the pipeline (hosted by Azure or self-hosted) |
+| **Artifact** | The output of the build stage (e.g., compiled zip file) |
+| **Trigger** | What starts the pipeline (push, PR, schedule) |
 
-### YAML Pipeline (azure-pipelines.yml)
+---
+
+### YAML vs Visual Designer
+
+| | YAML | Visual Designer |
+|---|---|---|
+| **Format** | Code (`.yml` file in repo) | Drag-and-drop UI |
+| **Version control** | ✅ Yes — tracked in git | ❌ No |
+| **Preferred** | ✅ Industry standard | Legacy / beginners |
+
+> **Always prefer YAML** — it's version-controlled, reviewable in PRs, and portable.
+
+---
+
+### Triggers
+
+| Trigger Type | When it runs |
+|---|---|
+| **Push trigger** | When code is pushed to a branch |
+| **PR trigger** | When a pull request is created/updated |
+| **Scheduled trigger** | On a cron schedule (e.g., every night at 2 AM) |
+| **Manual trigger** | Someone clicks "Run pipeline" in the UI |
+
+---
+
+### Agent Pools
+
+| Type | Description |
+|---|---|
+| **Microsoft-hosted** | Azure provides the VM (Ubuntu, Windows, macOS) — clean each run |
+| **Self-hosted** | You manage the VM — use when you need custom software or faster builds |
+
+---
+
+### YAML Pipeline Structure (simplified)
 
 ```yaml
 trigger:
   branches:
-    include:
-      - main # Run when code pushed to main
+    include: [main]       # Run when pushed to main
 
 pool:
-  vmImage: ubuntu-latest # Build agent (Ubuntu, Windows, macOS)
-
-variables:
-  buildConfiguration: "Release"
+  vmImage: ubuntu-latest  # Agent machine
 
 stages:
-  # Stage 1: Build and Test
   - stage: Build
     jobs:
       - job: BuildJob
         steps:
-          - task: UseDotNet@2
-            inputs:
-              version: "8.0.x"
-
           - script: dotnet restore
-            displayName: "Restore packages"
+          - script: dotnet build
+          - script: dotnet test
 
-          - script: dotnet build --configuration $(buildConfiguration)
-            displayName: "Build"
-
-          - script: dotnet test --configuration $(buildConfiguration) --logger trx
-            displayName: "Run tests"
-
-          - task: PublishTestResults@2
-            inputs:
-              testResultsFormat: "VSTest"
-              testResultsFiles: "**/*.trx"
-
-          - task: DotNetCoreCLI@2
-            displayName: "Publish"
-            inputs:
-              command: publish
-              publishWebProjects: true
-              arguments: "--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)"
-
-          - task: PublishBuildArtifacts@1
-            inputs:
-              pathToPublish: "$(Build.ArtifactStagingDirectory)"
-              artifactName: "drop"
-
-  # Stage 2: Deploy to Staging
   - stage: DeployStaging
     dependsOn: Build
-    condition: succeeded()
     jobs:
       - deployment: DeployToStaging
-        environment: Staging
+        environment: Staging    # Can have approval gates
         strategy:
           runOnce:
             deploy:
               steps:
                 - task: AzureWebApp@1
                   inputs:
-                    azureSubscription: "MyServiceConnection"
-                    appName: "MyWebApp-Staging"
-                    package: "$(Pipeline.Workspace)/drop/*.zip"
+                    appName: "MyApp-Staging"
 
-  # Stage 3: Deploy to Production (with approval)
   - stage: DeployProd
     dependsOn: DeployStaging
     jobs:
       - deployment: DeployToProduction
-        environment: Production # Has approval gate configured
+        environment: Production  # Requires manual approval
         strategy:
           runOnce:
             deploy:
               steps:
                 - task: AzureWebApp@1
                   inputs:
-                    azureSubscription: "MyServiceConnection"
-                    appName: "MyWebApp-Production"
-                    package: "$(Pipeline.Workspace)/drop/*.zip"
-```
-
-### Pipeline Triggers
-
-```yaml
-# Push trigger
-trigger:
-  branches: [main, develop]
-  paths:
-    include: ["src/**"] # Only trigger for changes in src/
-
-# Pull Request trigger
-pr:
-  branches: [main]
-
-# Scheduled trigger
-schedules:
-  - cron: "0 2 * * *" # Every night at 2 AM
-    displayName: Nightly Build
-    branches:
-      include: [main]
-```
-
-### Pipeline Variables
-
-```yaml
-variables:
-  myVar: 'hello'                          # Static variable
-  $(Build.BuildId)                        # Built-in: build number
-  $(Build.SourceBranchName)               # Built-in: branch name
-  $(System.DefaultWorkingDirectory)       # Built-in: root folder
-
-# Secret variables (set in Azure DevOps UI, not in YAML)
-# Reference them: $(mySecretVar) — value is masked in logs
+                    appName: "MyApp-Production"
 ```
 
 ---
 
-## 10.13 Azure Test Plans
+### Pipeline Variables
 
-### Testing Types
+| Type | Description |
+|---|---|
+| **Static variable** | Defined in YAML, visible to all |
+| **Built-in variable** | Provided by Azure (e.g., `$(Build.BuildId)`, `$(Build.SourceBranchName)`) |
+| **Secret variable** | Set in UI, never shown in logs — used for passwords, API keys |
 
-| Type                 | Description                                         |
-| -------------------- | --------------------------------------------------- |
-| **Unit Test**        | Test a single method/class in isolation             |
-| **Integration Test** | Test how multiple components work together          |
-| **Manual Test**      | Human tester follows test cases step by step        |
-| **Load Test**        | Simulate many concurrent users (Azure Load Testing) |
+---
 
-### Test Plans in Azure DevOps
+## 10.13 Advanced Azure Pipelines
+
+### Multi-Stage Pipelines
+> Split the pipeline into **stages**: Build → Test → Deploy Staging → Deploy Production.
+> Each stage can depend on the previous one passing.
+
+---
+
+### Environments and Approvals
+> An **Environment** in Azure DevOps represents a deployment target (Staging, Production).
+> You can add **approval gates** — a specific person must approve before the stage runs.
+
+```
+Build passes → Auto-deploy to Staging → Manual approval → Deploy to Production
+```
+
+---
+
+### Deployment Strategies
+
+| Strategy | Description | Use Case |
+|---|---|---|
+| **runOnce** | Deploy once to all targets | Simple deployments |
+| **Rolling** | Replace old instances one at a time | Minimize downtime |
+| **Blue-Green** | Two identical environments, swap traffic | Zero downtime, instant rollback |
+| **Canary** | Send small % of traffic to new version first | Test in production safely |
+
+---
+
+### Pipeline Templates
+> Reusable YAML snippets — define steps once, reference from multiple pipelines.
+> Avoids copy-pasting the same build steps across 10 pipelines.
+
+---
+
+### Dependency Management
+> Use `dependsOn` in YAML to control stage/job order:
+```yaml
+- stage: DeployProd
+  dependsOn: DeployStaging     # Only runs if DeployStaging succeeded
+  condition: succeeded()
+```
+
+---
+
+## 10.14 Azure Release Pipelines
+
+### What is a Release Pipeline?
+> The **classic** (non-YAML) way to define deployments in Azure DevOps. Still used in many projects.
+> You pick an artifact (build output) and define deployment stages with gates.
+
+---
+
+### Deployment Environments
+> Each stage in a release pipeline targets an environment: Dev → QA → Staging → Production.
+
+---
+
+### Deployment Gates and Approvals
+| Feature | Description |
+|---|---|
+| **Pre-deployment approval** | A person must approve before stage starts |
+| **Post-deployment approval** | A person confirms deployment was successful |
+| **Gates** | Automated checks (e.g., no active incidents, all tests passing) before proceeding |
+
+---
+
+### Variables and Configuration
+> Store environment-specific values (connection strings, API URLs) as pipeline variables — different value per stage, secrets stored securely.
+
+---
+
+## 10.15 Azure Test Plans
+
+### What is Azure Test Plans?
+> Azure DevOps service for **manual and automated testing** — organize test cases, track results, integrate with CI pipelines.
+
+---
+
+### Test Plans Structure
 
 ```
 Test Plan (e.g., "Sprint 5 Regression")
   └── Test Suite (e.g., "Login Feature")
-        ├── Test Case 1: Valid login shows dashboard
-        ├── Test Case 2: Invalid password shows error
-        └── Test Case 3: Locked account shows message
-```
-
-### Running Tests in Pipeline
-
-```yaml
-- script: dotnet test MyProject.Tests --logger "trx;LogFileName=results.trx" --collect:"XPlat Code Coverage"
-  displayName: "Run unit tests"
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: "VSTest"
-    testResultsFiles: "**/*.trx"
-
-- task: PublishCodeCoverageResults@1
-  inputs:
-    codeCoverageTool: "Cobertura"
-    summaryFileLocation: "$(Agent.TempDirectory)/**/coverage.cobertura.xml"
+        ├── Test Case: Valid login → redirects to dashboard
+        ├── Test Case: Wrong password → shows error message
+        └── Test Case: Locked account → shows locked message
 ```
 
 ---
 
-## 🎯 Interview Questions for Module 10
+### Types of Testing
 
-| #   | Question                                                                    |
-| --- | --------------------------------------------------------------------------- |
-| 1   | What is the cloud? What are the 5 characteristics of cloud computing?       |
-| 2   | What is the difference between IaaS, PaaS, and SaaS? Give Azure examples.   |
-| 3   | What is CapEx vs OpEx? How does cloud help with this?                       |
-| 4   | What is an Azure Region, Availability Zone, and Region Pair?                |
-| 5   | What is a Resource Group in Azure?                                          |
-| 6   | What is the difference between Azure VM and Azure App Service?              |
-| 7   | What is a Deployment Slot? How do you do a zero-downtime deployment?        |
-| 8   | What is an Azure Function? What triggers are available?                     |
-| 9   | What is AKS? How is it different from running Docker on a VM?               |
-| 10  | What is the difference between Azure Service Bus and Event Grid?            |
-| 11  | What is Azure Active Directory? What is a Tenant? What is RBAC?             |
-| 12  | What is CI/CD? What is the difference between CI and CD?                    |
-| 13  | What are the 5 Azure DevOps services?                                       |
-| 14  | What is a YAML pipeline in Azure DevOps? What is a trigger?                 |
-| 15  | What is the difference between a User Story, Task, and Bug in Azure Boards? |
-| 16  | What is a Sprint? Explain the Scrum process.                                |
-| 17  | What is Cosmos DB? When would you choose it over Azure SQL?                 |
-| 18  | What is an ARM Template? What is it used for?                               |
+| Type | Description |
+|---|---|
+| **Unit Test** | Test a single method/class in isolation |
+| **Integration Test** | Test how multiple components work together |
+| **Manual Test** | Tester follows test cases step by step |
+| **Automated Test** | Code runs tests — integrated into pipeline |
+| **Load Test** | Simulate many concurrent users (Azure Load Testing) |
+
+---
+
+### Automated Testing in Pipeline
+> Run unit tests automatically on every commit:
+```yaml
+- script: dotnet test --logger trx
+- task: PublishTestResults@2      # Shows test results in pipeline UI
+- task: PublishCodeCoverageResults@1  # Shows code coverage %
+```
+
+**Interview Answer:** _"In Azure Test Plans, you create test plans with test cases for manual testing. For automated testing, you integrate `dotnet test` into the pipeline and publish results — so every build shows pass/fail stats and code coverage."_
+
+---
+
+## 🎯 Top Interview Questions — Module 10
+
+### Cloud Basics
+| # | Question | Key Answer |
+|---|---|---|
+| 1 | What is the cloud? | Delivery of computing services over the internet, pay-as-you-go |
+| 2 | What are the 5 characteristics of cloud? | On-demand, broad access, resource pooling, elasticity, measured service |
+| 3 | What is CapEx vs OpEx? | CapEx = buy hardware upfront; OpEx = monthly cloud bill. Cloud = OpEx |
+| 4 | Difference between IaaS, PaaS, SaaS? | IaaS = VM (you manage OS); PaaS = App Service (you manage code); SaaS = Office 365 (just use it) |
+| 5 | Types of clouds? | Public, Private, Hybrid, Multi-cloud |
+
+### Azure Services
+| # | Question | Key Answer |
+|---|---|---|
+| 6 | What is a Region and Availability Zone? | Region = geo area with data centers; AZ = separate DCs within a region for HA |
+| 7 | What is a Resource Group? | Logical container for related resources that share same lifecycle |
+| 8 | VM vs App Service? | VM = IaaS (full control); App Service = PaaS (just deploy code) |
+| 9 | What is a Deployment Slot? | Staging env; swap to prod with zero downtime |
+| 10 | What is Azure Functions? | Serverless; runs on triggers (HTTP, Timer, Queue, Blob) |
+| 11 | What is AKS? | Managed Kubernetes — you run containers, Azure manages control plane |
+| 12 | Azure SQL vs Cosmos DB? | SQL = relational/transactions; Cosmos DB = NoSQL/global scale/flexible schema |
+| 13 | Service Bus vs Event Grid? | Service Bus = messaging (queues/topics, guaranteed delivery); Event Grid = event routing (react to Azure events) |
+| 14 | What is RBAC in Azure? | Role-based access — assign Owner/Contributor/Reader roles to users/groups |
+
+### Azure DevOps
+| # | Question | Key Answer |
+|---|---|---|
+| 15 | What are the 5 Azure DevOps services? | Boards, Repos, Pipelines, Test Plans, Artifacts |
+| 16 | What is CI/CD? | CI = auto build+test on commit; CD = auto deploy to staging, manual approval for prod |
+| 17 | YAML vs Visual Designer? | YAML is preferred — version-controlled, in git, reviewable in PRs |
+| 18 | What is an Environment with approval? | Deployment target with a gate — person must approve before stage runs |
+| 19 | What is a Deployment Slot / Blue-Green? | Two identical environments, switch traffic with zero downtime |
+| 20 | Difference between User Story, Task, Bug? | Story = user feature request; Task = technical work; Bug = defect |
+| 21 | What is a Sprint? | Time-boxed work period (2 weeks); team commits to sprint backlog |
+| 22 | What is a PR? Best practices? | Merge request; keep small, require reviews, pass tests, use branch policies |
 
 ---
 
